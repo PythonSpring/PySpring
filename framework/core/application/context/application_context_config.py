@@ -2,4 +2,4 @@ from pydantic import BaseModel
 
 
 class ApplicationContextConfig(BaseModel):
-    configuration_path: str
+    properties_path: str

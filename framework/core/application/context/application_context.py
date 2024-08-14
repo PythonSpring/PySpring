@@ -7,9 +7,9 @@ from framework.core.entities.bean_collection import BeanCollection, BeanConflict
 from framework.core.entities.component import Component, ComponentScope
 from loguru import logger
 
-from framework.core.entities.configurations.configuration import Configuration
+from framework.core.entities.properties.properties import Properties
 from framework.core.entities.controllers.rest_controller import RestController
-from framework.core.entities.configurations.configuration_loader import _ConfigurationLoader
+from framework.core.entities.properties.properties_loader import _PropertiesLoader
 
 class ComponentNotFoundError(Exception): ...
 
@@ -39,11 +39,11 @@ class ApplicationContext:
         self.bean_collection_cls_container: dict[str, Type[BeanCollection]] = {}
         self.singleton_bean_instance_container: dict[str, object] = {}
 
-        self.configuration_cls_container: dict[str, Type[Configuration]] = {}
-        self.singleton_configuration_instance_container: dict[str, Configuration] = {}
+        self.properties_cls_container: dict[str, Type[Properties]] = {}
+        self.singleton_properties_instance_container: dict[str, Properties] = {}
         
-    def _create_config_loader(self) -> _ConfigurationLoader:
-        return _ConfigurationLoader(self.config.configuration_path, list(self.configuration_cls_container.values()))
+    def _create_properties_loader(self) -> _PropertiesLoader:
+        return _PropertiesLoader(self.config.properties_path, list(self.properties_cls_container.values()))
 
     def as_view(self) -> ApplicationContextView:
         return ApplicationContextView(
@@ -79,11 +79,11 @@ class ApplicationContext:
         optional_instance = self.singleton_bean_instance_container.get(bean_name)
         return optional_instance
     
-    def get_configuration(self, configuration_cls: Type[Configuration]) -> Optional[Configuration]:
-        configuration_cls_name = configuration_cls.get_key()
-        if configuration_cls_name not in self.configuration_cls_container:
+    def get_properties(self, properties_cls: Type[Properties]) -> Optional[Properties]:
+        properties_cls_name = properties_cls.get_key()
+        if properties_cls_name not in self.properties_cls_container:
             return
-        optional_instance = self.singleton_configuration_instance_container.get(configuration_cls_name)
+        optional_instance = self.singleton_properties_instance_container.get(properties_cls_name)
         return optional_instance
     
     def register_component(self, component_cls: Type[Component]) -> None:
@@ -108,11 +108,11 @@ class ApplicationContext:
         bean_name = bean_cls.get_name()
         self.bean_collection_cls_container[bean_name] = bean_cls
         
-    def register_configuration(self, configuration_cls: Type[Configuration]) -> None:
-        if not issubclass(configuration_cls, Configuration):
-            raise TypeError(f"[CONFIGURATION REGISTRATION ERROR] Configuration: {configuration_cls} is not a subclass of Configuration")
-        configuration_name = configuration_cls.get_key()
-        self.configuration_cls_container[configuration_name] = configuration_cls
+    def register_properties(self, properties_cls: Type[Properties]) -> None:
+        if not issubclass(properties_cls, Properties):
+            raise TypeError(f"[PROPERTIES REGISTRATION ERROR] Properties: {properties_cls} is not a subclass of Properties")
+        properties_name = properties_cls.get_key()
+        self.properties_cls_container[properties_name] = properties_cls
 
     def get_controller_instances(self) -> list[RestController]:
         return [_cls() for _cls in self.controller_cls_container.values()]
@@ -122,7 +122,17 @@ class ApplicationContext:
     
     def get_singleton_bean_instances(self) -> list[object]:
         return [_cls for _cls in self.singleton_bean_instance_container.values()]
-
+    
+    def _load_properties(self) -> None:
+        properties_loader = self._create_properties_loader()
+        properties_instance_dict = properties_loader.load_properties()
+        for properties_key, properties_cls in self.properties_cls_container.items():
+            logger.debug(f"[INITIALIZING SINGLETON PROPERTIES] Init singleton properties: {properties_key}")
+            optional_properties = properties_instance_dict.get(properties_key)
+            if optional_properties is None:
+                raise TypeError(f"[PROPERTIES INITIALIZATION ERROR] Properties: {properties_key} is not found in properties file")
+            self.singleton_properties_instance_container[properties_key] = optional_properties
+        _PropertiesLoader.optional_loaded_properties = self.singleton_properties_instance_container
     def _init_ioc_container(self) -> None:
         """
         Initializes the IoC (Inversion of Control) container by creating singleton instances of all registered components.
@@ -130,8 +140,9 @@ class ApplicationContext:
         For each component class with a `Singleton` scope, it creates an instance of the component and stores it in the `singleton_component_instance_container` dictionary.
         This ensures that subsequent calls to `get_component()` for singleton components will return the same instance, as required by the Singleton design pattern.
         """
-                
         
+        
+        # for Components
         for component_cls_name, component_cls in self.component_cls_container.items():
             if component_cls.get_scope() != ComponentScope.Singleton:
                 continue
@@ -139,10 +150,11 @@ class ApplicationContext:
             instance = component_cls()
             self.singleton_component_instance_container[component_cls_name] = instance
 
-        # for bean
+        # for Bean
         for bean_collection_cls_name, bean_collection_cls in self.bean_collection_cls_container.items():
             logger.debug(f"[INITIALIZING SINGLETON BEAN] Init singleton bean: {bean_collection_cls_name}")
             collection = bean_collection_cls()
+            # before scanning beans, make sure properties is loaded in _PropertiesLoader by calling load_properties inside Application class
             bean_views = collection.scan_beans()
             for view in bean_views:
                 if view.bean_name in self.singleton_bean_instance_container:
@@ -152,12 +164,7 @@ class ApplicationContext:
                 self.singleton_bean_instance_container[view.bean_name] = view.bean
                 
                 
-        # for configuration
-        config_loader = self._create_config_loader()
-        for config_key, config_cls in self.configuration_cls_container.items():
-            logger.debug(f"[INITIALIZING SINGLETON CONFIG] Init singleton configuration: {config_key}")
-            configuration_instance_dict = config_loader.load_configs()
-            self.singleton_configuration_instance_container[config_key] = configuration_instance_dict[config_key]
+        
 
 
     def _inject_component_dependencies(self, entity: Type[Component | RestController]) -> None:
@@ -168,9 +175,9 @@ class ApplicationContext:
                 )
                 continue
             
-            if issubclass(annotated_entity_cls, Configuration):
-                optional_config = self.get_configuration(annotated_entity_cls)
-                setattr(entity, attr_name, optional_config)
+            if issubclass(annotated_entity_cls, Properties):
+                optional_properties = self.get_properties(annotated_entity_cls)
+                setattr(entity, attr_name, optional_properties)
                 continue
                 
             

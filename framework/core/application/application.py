@@ -5,14 +5,15 @@ from framework.core.application.context.application_context import ApplicationCo
 from framework.core.application.context.application_context_config import ApplicationContextConfig
 from framework.core.entities.bean_collection import BeanCollection
 from framework.core.entities.component import Component, ComponentLifeCycle
-from framework.core.entities.configurations.configuration import Configuration
+from framework.core.entities.properties.properties import Properties
+from framework.core.entities.properties.properties_loader import _PropertiesLoader
 from framework.core.entities.controllers.rest_controller import RestController
 from framework.core.utils.class_scanner import ClassScanner
 from loguru import logger
 from fastapi import FastAPI, APIRouter
 import uvicorn
 
-AppEntities = Component | RestController | BeanCollection | Configuration
+AppEntities = Component | RestController | BeanCollection | Properties
 
 class Application:
     def __init__(self, app_config_path: str = "./app-config.json") -> None:
@@ -21,16 +22,16 @@ class Application:
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
         
-        self.class_scanner = ClassScanner(self.app_config.app_src_target_dir)
-        self.app_context_config = ApplicationContextConfig(configuration_path= self.app_config.properties_file_path)
-        self.app_context = ApplicationContext(self.app_context_config)
+        self.class_scanner = ClassScanner(target_directory=self.app_config.app_src_target_dir)
+        self.app_context_config = ApplicationContextConfig(properties_path= self.app_config.properties_file_path)
+        self.app_context = ApplicationContext(config=self.app_context_config)
         self.fastapi = FastAPI()
 
         self.classes_with_handlers: dict[Type[AppEntities], Callable] = {
             Component: self._handle_register_component,
             RestController: self._handle_register_rest_controller,
             BeanCollection: self._handle_register_bean_collection,
-            Configuration: self._handle_register_configuration,
+            Properties: self._handle_register_properties,
         }
 
     
@@ -61,14 +62,15 @@ class Application:
         logger.debug(f"[BEAN COLLECTION INIT] Register bean collection: {_cls.__name__}")
         self.app_context.register_bean_collection(_cls)
         
-    def _handle_register_configuration(self, _cls: Type[Configuration]) -> None:
-        logger.debug(f"[CONFIGURATION INIT] Register configuration: {_cls.__name__}")
-        self.app_context.register_configuration(_cls)
+    def _handle_register_properties(self, _cls: Type[Properties]) -> None:
+        logger.debug(f"[PROPERTIES INIT] Register properties: {_cls.__name__}")
+        self.app_context.register_properties(_cls)
     
 
     def __init_app(self) -> None:
         self._scan_classes_for_project()
         self._register_app_entities()
+        self.app_context._load_properties()
         self.app_context._init_ioc_container()
         self.app_context.inject_dependencies_for_component_container()
         # after injecting all deps, lifecycle (init) can be called
