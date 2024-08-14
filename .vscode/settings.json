@@ -2,6 +2,8 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
     "cSpell.words": [
-        "sqlalchemy"
+        "fastapi",
+        "sqlalchemy",
+        "uvicorn"
     ]
 }
