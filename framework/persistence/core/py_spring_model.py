@@ -1,7 +1,7 @@
 from typing import ClassVar, Optional
 
 from sqlalchemy import Engine
-from sqlmodel import Field, SQLModel
+from sqlmodel import SQLModel
 
 
 class PySpringModel(SQLModel):
