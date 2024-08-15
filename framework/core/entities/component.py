@@ -1,4 +1,3 @@
-
 from enum import Enum
 from typing import Type, final
 
@@ -7,18 +6,20 @@ class ComponentLifeCycle(Enum):
     Init = "initialization"
     Destruction = "destruction"
 
+
 class ComponentScope(Enum):
     Singleton = "Singleton"
     Prototype = "Prototype"
 
+
 class Component:
     class Config:
         scope: ComponentScope = ComponentScope.Singleton
-    
+
     @classmethod
     def get_name(cls) -> str:
         return cls.__name__
-    
+
     @classmethod
     def get_component_base(cls) -> "Type[Component]":
         return cls
@@ -26,12 +27,11 @@ class Component:
     @classmethod
     def get_scope(cls) -> ComponentScope:
         return cls.Config.scope
-    
+
     @classmethod
     def set_scope(cls, scope: ComponentScope) -> None:
         cls.Config.scope = scope
 
-    
     def pre_initialize(self) -> None:
         """Hook method called before initialization"""
         pass
@@ -61,11 +61,9 @@ class Component:
         self.pre_initialize()
         self.initialize()
         self.post_initialize()
-    
+
     @final
     def finish_destruction_cycle(self) -> None:
         self.pre_destroy()
         self.destroy()
         self.post_destroy()
-
-

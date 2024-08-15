@@ -1,6 +1,4 @@
-from fastapi import FastAPI, APIRouter
-
-
+from fastapi import APIRouter, FastAPI
 
 
 class RestController:
@@ -21,9 +19,6 @@ class RestController:
     def get_router_prefix(cls) -> str:
         return cls.Config.prefix
 
-
     @classmethod
     def get_name(cls) -> str:
         return cls.__name__
-
-    

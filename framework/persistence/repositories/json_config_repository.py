@@ -3,7 +3,6 @@ from typing import Generic, Optional, Type, TypeVar, get_args
 
 from pydantic import BaseModel
 
-
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -41,9 +40,13 @@ class JsonConfigRepository(Generic[T]):
         self._config = self._load_config()
 
     def save_config(self) -> None:
-        is_the_same_class = (self._config.__class__.__name__ == self.base_model_cls.__name__)  # type: ignore
+        is_the_same_class = (
+            self._config.__class__.__name__ == self.base_model_cls.__name__
+        )  # type: ignore
         if not is_the_same_class:
-            raise TypeError(f"[BASE MODEL CLASS TYPE MISMATCH] Base model class of current repository: {self.base_model_cls.__name__} mismatch with config class: {self._config.__class__.__name__}")  # type: ignore
+            raise TypeError(
+                f"[BASE MODEL CLASS TYPE MISMATCH] Base model class of current repository: {self.base_model_cls.__name__} mismatch with config class: {self._config.__class__.__name__}"
+            )  # type: ignore
         with open(self.file_path, "w") as file:
             file.write(self._config.model_dump_json(indent=4))
 
