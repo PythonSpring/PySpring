@@ -1,11 +1,12 @@
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, Optional
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
 
 
 class _FrameworkModule(ABC):
+    __key__: Optional[str] = None
     """
     Represents a module within the framework.
     
@@ -30,3 +31,9 @@ class _FrameworkModule(ABC):
     @abstractmethod
     def enabled(self) -> None:
         raise NotImplementedError()
+    
+    @classmethod
+    def get_module_name(cls) -> str:
+        if cls.__key__ is None:
+            raise ValueError(f"[MODULE KEY NOT SET] Module: {cls.__name__} __key__ is not set")
+        return cls.__key__
