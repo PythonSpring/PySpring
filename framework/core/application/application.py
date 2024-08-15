@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Type
+from typing import Callable, Iterable, Type, cast
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
@@ -98,7 +98,8 @@ class Application:
         logger.info(
             f"[SQLMODEL TABEL MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
         )
-        core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= False)
+        self.model_classes = core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= False, target_subclasses= [PySpringModel, SQLModel])
+        
 
     def _create_all_tables(self) -> None:
         logger.success(
@@ -106,6 +107,7 @@ class Application:
         )
         SQLModel.metadata.create_all(self.sql_engine)
         PySpringModel.set_engine(self.sql_engine)
+        PySpringModel.set_models(cast(list[Type[PySpringModel]],list(self.model_classes)))
 
     def _scan_classes_for_project(self) -> None:
         self.app_class_scanner.scan_classes_for_file_paths()

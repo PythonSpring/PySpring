@@ -1,11 +1,12 @@
 import importlib.util
+from inspect import isclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Type
 
 from loguru import logger
 
 
-def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True) -> None:
+def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True, target_subclasses: Iterable[Type[object]] = []) -> set[Type[object]]:
     """
     Dynamically imports modules from the specified file paths.
     
@@ -16,6 +17,7 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
     Raises:
         Exception: If an error occurs during the import process and `is_ignore_error` is False.
     """
+    all_loaded_classes: list[Type[object]] = []
         
     for module_path in module_paths:
         file_path = Path(module_path).resolve()
@@ -39,11 +41,28 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
 
         # Execute the module in its own namespace
         try:
+            logger.info(f"[DYNAMICALLY MODULE IMPORT] Import module: {module_name}")
             spec.loader.exec_module(module)
             logger.success(
                 f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}"
             )
+            loaded_classes = [
+                getattr(module, attr) for attr in dir(module) if not attr.startswith("__")
+                and isclass(getattr(module, attr))
+            ]
+            all_loaded_classes.extend(loaded_classes)
+            
         except Exception as error:
             logger.exception(error)
             if not is_ignore_error:
                 raise error
+            
+    returned_target_classes: set[Type[object]] = set()
+    for target_cls in target_subclasses:
+        for loaded_class in all_loaded_classes:
+            if loaded_class in target_subclasses:
+                continue
+            if issubclass(loaded_class, target_cls):
+                returned_target_classes.add(loaded_class)
+        
+    return returned_target_classes
