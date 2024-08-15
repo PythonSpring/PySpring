@@ -1,10 +1,11 @@
 
+from abc import ABC, abstractmethod
 from typing import Iterable
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
 
 
-class _FrameworkModule:
+class _FrameworkModule(ABC):
     """
     Represents a module within the framework.
     
@@ -22,8 +23,10 @@ class _FrameworkModule:
     def __init__(self, fastapi: FastAPI) -> None:
         pass
 
+    @abstractmethod
     def get_api_routers(self) -> Iterable[APIRouter]:
-        return []
+        raise NotImplementedError()
 
+    @abstractmethod
     def enabled(self) -> None:
-        ...
+        raise NotImplementedError()
