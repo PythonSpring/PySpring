@@ -98,7 +98,7 @@ class Application:
         logger.info(
             f"[SQLMODEL TABEL MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
         )
-        self.model_classes = core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= False, target_subclasses= [PySpringModel, SQLModel])
+        self.model_classes = core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= True, target_subclasses= [PySpringModel, SQLModel])
         
 
     def _create_all_tables(self) -> None:
@@ -197,5 +197,6 @@ class Application:
             self.__init_controllers()
             self.__enable_modules()
             self.__run_server()
+        
         finally:
             self._handle_singleton_components_life_cycle(ComponentLifeCycle.Destruction)

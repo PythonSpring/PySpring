@@ -28,6 +28,12 @@ class ClassScanner:
             node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
         ]
         for class_name in class_names:
+            if class_name in class_objects:
+                logger.warning(
+                    f"[DUPLICATED CLASS IMPORT] Duplicate class name found in file {file_path}: {class_name}"
+                )
+                continue
+            
             class_obj = self.import_class_from_file(file_path, class_name)
             if class_obj:
                 class_objects[class_name] = class_obj

@@ -40,22 +40,30 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
             continue
 
         # Execute the module in its own namespace
+   
+        logger.info(f"[DYNAMICALLY MODULE IMPORT] Import module: {module_name}")
         try:
-            logger.info(f"[DYNAMICALLY MODULE IMPORT] Import module: {module_name}")
             spec.loader.exec_module(module)
-            logger.success(
-                f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}"
-            )
-            loaded_classes = [
-                getattr(module, attr) for attr in dir(module) if not attr.startswith("__")
-                and isclass(getattr(module, attr))
-            ]
-            all_loaded_classes.extend(loaded_classes)
-            
         except Exception as error:
             logger.exception(error)
             if not is_ignore_error:
                 raise error
+            logger.success(
+            f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}"
+        )
+        loaded_classes = []
+        for attr in dir(module):
+            if attr.startswith("__"):
+                continue
+            if not isclass(getattr(module, attr)):
+                continue
+            
+            cls = getattr(module, attr)
+            loaded_classes.append(cls)
+            
+        all_loaded_classes.extend(loaded_classes)
+            
+        
             
     returned_target_classes: set[Type[object]] = set()
     for target_cls in target_subclasses:
