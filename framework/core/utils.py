@@ -8,7 +8,7 @@ def dynamically_import_modules(module_paths: Iterable[str]) -> None:
     for module_path in module_paths:
         file_path = Path(module_path).resolve()
         module_name = file_path.stem
-
+        logger.info(f"[MODULE IMPORT] Import module path: {file_path}")
         # Create a module specification
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         if spec is None:

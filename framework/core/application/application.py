@@ -19,6 +19,7 @@ from fastapi import FastAPI, APIRouter
 import uvicorn
 
 from framework.core.util_classes.file_path_scanner import FilePathScanner
+from framework.persistence.core.py_spring_model import PySpringModel
 
 AppEntities = Component | RestController | BeanCollection | Properties
 
@@ -70,8 +71,9 @@ class Application:
         core_utils.dynamically_import_modules(self.app_file_groups.model_files)
         
     def _create_all_tables(self) -> None:
-        logger.success(f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {','.join(SQLModel.metadata.tables.keys())}")
+        logger.success(f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}")
         SQLModel.metadata.create_all(self.sql_engine)
+        PySpringModel.engine = self.sql_engine
 
     
     def _scan_classes_for_project(self) -> None:
