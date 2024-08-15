@@ -154,7 +154,7 @@ class ApplicationContext:
             optional_properties = properties_instance_dict.get(properties_key)
             if optional_properties is None:
                 raise TypeError(
-                    f"[PROPERTIES INITIALIZATION ERROR] Properties: {properties_key} is not found in properties file"
+                    f"[PROPERTIES INITIALIZATION ERROR] Properties: {properties_key} is not found in properties file for class: {properties_cls.get_name()} with key: {properties_cls.get_key()}"
                 )
             self.singleton_properties_instance_container[properties_key] = (
                 optional_properties
