@@ -1,3 +1,8 @@
-class RepositoryBase:
-    def __init__(self) -> None:
-        pass
+
+
+
+from framework.core.entities.component import Component
+
+
+class RepositoryBase(Component):
+    ...

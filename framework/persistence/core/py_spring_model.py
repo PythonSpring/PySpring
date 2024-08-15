@@ -1,7 +1,9 @@
-from typing import ClassVar, Optional
+import functools
+from typing import Any, Callable, ClassVar, Optional, TypeVar
 
+from loguru import logger
 from sqlalchemy import Engine
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session
 class PySpringModel(SQLModel):
     """
     Represents a PySpring model, which is a subclass of SQLModel.
@@ -40,3 +42,35 @@ class PySpringModel(SQLModel):
         if cls._models is None:
             raise ValueError("[MODEL_LOOKUP NOT SET] Model lookup is not set")
         return {str( _model.__tablename__): _model for _model in cls._models }
+    
+    @classmethod
+    def create_session(cls) -> Session:
+        engine = cls.get_engine()
+        return Session(engine, expire_on_commit=False)
+         
+
+FT = TypeVar("FT", bound=Callable[..., Any])
+def Transactional(func: FT) -> FT:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        # Start a new session
+        session: Session = PySpringModel.create_session()
+        try:
+            # Inject the session into the function's arguments
+            if not isinstance(kwargs.get("session"), Session):
+                kwargs['session'] = session
+            
+            result = func(*args, **kwargs)
+            # Commit the transaction if everything went well
+            session.commit()
+            return result
+        except Exception as error:
+            # Rollback the transaction in case of an exception
+            session.rollback()
+            logger.exception(error)
+            raise error
+        finally:
+            # Close the session
+            session.close()
+    
+    return wrapper # type: ignore
