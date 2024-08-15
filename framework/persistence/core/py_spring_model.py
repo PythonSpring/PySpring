@@ -12,4 +12,23 @@ class PySpringModel(SQLModel):
     which can be used for database operations related to this model.
     """
         
-    engine: ClassVar[Optional[Engine]] = None
+    _engine: ClassVar[Optional[Engine]] = None
+
+
+    @classmethod
+    def set_engine(cls, engine: Engine) -> None:
+        
+        cls._engine = engine
+
+    @classmethod
+    def get_engine(cls) -> Engine:
+        """
+        Returns the SQLAlchemy Engine instance associated with this model.
+
+        Returns:
+            The SQLAlchemy Engine instance.
+        """
+        if cls._engine is None:
+            raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
+        
+        return cls._engine

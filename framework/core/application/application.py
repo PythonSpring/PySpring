@@ -19,6 +19,7 @@ from framework.core.entities.controllers.rest_controller import RestController
 from framework.core.entities.properties.properties import Properties
 from framework.core.util_classes.class_scanner import ClassScanner
 from framework.core.util_classes.file_path_scanner import FilePathScanner
+from framework.modules.framework_module import _FrameworkModule
 from framework.persistence.core.py_spring_model import PySpringModel
 
 AppEntities = Component | RestController | BeanCollection | Properties
@@ -46,11 +47,12 @@ class Application:
     """
     PY_FILE_EXTENSION = ".py"
 
-    def __init__(self, app_config_path: str = "./app-config.json") -> None:
+    def __init__(self, app_config_path: str = "./app-config.json", module_classes: Iterable[Type[_FrameworkModule]] = list()) -> None:
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
         )
 
+        self.module_classes = module_classes
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
         self.sql_engine = create_engine(
@@ -103,7 +105,7 @@ class Application:
             f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}"
         )
         SQLModel.metadata.create_all(self.sql_engine)
-        PySpringModel.engine = self.sql_engine
+        PySpringModel.set_engine(self.sql_engine)
 
     def _scan_classes_for_project(self) -> None:
         self.app_class_scanner.scan_classes_for_file_paths()
@@ -179,10 +181,19 @@ class Application:
             port=self.app_config.server_config.port,
         )
 
+    def __enable_modules(self) -> None:
+        for module_cls in self.module_classes:
+            module = module_cls(self.fastapi)
+            logger.info(f"[MODULE ENABLED] Enable module: {module_cls.__name__}")
+            for router in module.get_api_routers():
+                self.fastapi.include_router(router)
+            module.enabled()
+
     def run(self) -> None:
         try:
             self.__init_app()
             self.__init_controllers()
+            self.__enable_modules()
             self.__run_server()
         finally:
             self._handle_singleton_components_life_cycle(ComponentLifeCycle.Destruction)
