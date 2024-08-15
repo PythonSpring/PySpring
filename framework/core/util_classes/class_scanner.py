@@ -1,12 +1,12 @@
-import os
 import ast
 import importlib.util
 from loguru import logger
 from typing import Iterable, Optional, Type
 
 class ClassScanner:
-    def __init__(self, target_directory: str) -> None:
-        self.directory: str = target_directory
+    def __init__(self, file_paths: Iterable[str]
+        ) -> None:
+        self.file_paths = file_paths
         self.scanned_classes: dict[str, dict[str, Type[object]]] = {}
 
     def extract_classes_from_file(self, file_path: str) -> dict[str, Type[object]]:
@@ -16,7 +16,6 @@ class ClassScanner:
         
         tree = ast.parse(file_content)
         class_names: list[str] = [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
-        
         for class_name in class_names:
             class_obj = self.import_class_from_file(file_path, class_name)
             if class_obj:
@@ -24,14 +23,10 @@ class ClassScanner:
 
         return class_objects
 
-    def scan_classes_under_directory(self) -> None:
-        for root, _, files in os.walk(self.directory):
-            for file in files:
-                if not file.endswith('.py'):
-                    continue
-                file_path: str = os.path.join(root, file)
-                object_cls_dict: dict[str, Type[object]] = self.extract_classes_from_file(file_path)
-                self.scanned_classes[file_path] = object_cls_dict
+    def scan_classes_for_file_paths(self) -> None:
+        for file_path in self.file_paths:
+            object_cls_dict: dict[str, Type[object]] = self.extract_classes_from_file(file_path)
+            self.scanned_classes[file_path] = object_cls_dict
 
     def import_class_from_file(self, file_path: str, class_name: str) -> Optional[Type[object]]:
         spec = importlib.util.spec_from_file_location(class_name, file_path)
@@ -40,7 +35,6 @@ class ClassScanner:
         module = importlib.util.module_from_spec(spec)
         if spec.loader is None:
             return
-        
         spec.loader.exec_module(module)
         return getattr(module, class_name, None)
 
