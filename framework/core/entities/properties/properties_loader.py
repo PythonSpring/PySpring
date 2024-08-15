@@ -1,5 +1,5 @@
 import json
-from typing import Any, Optional, Type
+from typing import Optional, Type
 
 import yaml
 
@@ -7,6 +7,14 @@ from framework.core.entities.properties.properties import Properties
 
 
 class _PropertiesLoader:
+    """
+    Provides a utility class `_PropertiesLoader` to load and validate properties from a file.
+    The `_PropertiesLoader` class is responsible for loading properties from a file, validating them against a set of known `Properties` classes, and providing access to the loaded properties.
+    The class supports loading properties from JSON or YAML files, and raises appropriate errors if the file extension is unsupported or the properties keys are invalid.
+    The `load_properties` method returns a dictionary of `Properties` instances, where the keys match the keys in the properties file.
+    The `get_properties` method provides a way to retrieve a specific `Properties` instance by its key, if it has been previously loaded.
+    """
+        
     optional_loaded_properties: dict[str, Properties] = {}
 
     def __init__(

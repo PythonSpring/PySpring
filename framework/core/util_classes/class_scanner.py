@@ -6,6 +6,14 @@ from loguru import logger
 
 
 class ClassScanner:
+    """
+    A class that scans Python files and extracts the classes defined within them.
+    The `ClassScanner` class provides methods to scan a set of file paths, extract the classes defined in those files, and retrieve the extracted classes.
+    The main functionality is provided by the `scan_classes_for_file_paths()` method, which scans the specified file paths and stores the extracted classes in the `scanned_classes` attribute. 
+    The `get_classes()` method can then be used to retrieve all the extracted classes.
+    The `extract_classes_from_file()` method is responsible for extracting the classes from a single file, and the `import_class_from_file()` method is used to import a class from a file.
+    """
+        
     def __init__(self, file_paths: Iterable[str]) -> None:
         self.file_paths = file_paths
         self.scanned_classes: dict[str, dict[str, Type[object]]] = {}

@@ -8,6 +8,13 @@ from framework.core.entities.properties.properties_loader import _PropertiesLoad
 
 
 class BeanView(BaseModel):
+    """
+    The `BeanView` class represents a single bean within a `BeanCollection`. 
+    It contains information about the bean, such as its name and the function used to create it.
+    
+    The `is_valid_bean()` method checks whether the bean name matches the name of the bean's class.
+    """
+        
     class Config:
         arbitrary_types_allowed = True
 
@@ -19,13 +26,35 @@ class BeanView(BaseModel):
         return self.bean_name == self.bean.__class__.__name__
 
 
-class BeanConflictError(Exception): ...
+class BeanConflictError(Exception): 
+    """
+    Raised when there is a conflict between beans in a `BeanCollection`.
+    """    
+    ...
 
 
-class InvalidBeanError(Exception): ...
+class InvalidBeanError(Exception): 
+    """
+    Raised when a bean in a `BeanCollection` is invalid, such as when the bean name does not match the name of the bean's class.
+    """
+    ...
 
 
 class BeanCollection:
+    """
+    Provides a `BeanCollection` class that scans and manages a collection of beans (components) within a class.
+    
+    The `BeanCollection` class has the following key features:
+    
+    - `scan_beans()`: Scans the current class for bean creation functions and returns a list of `BeanView` objects, which contain information about each bean.
+    - `construct_bean_creation_func()`: Constructs a bean creation function that automatically injects any required properties based on the bean creation function's type annotations.
+    - `get_name()`: Returns the name of the `BeanCollection` class.
+    
+    The `BeanView` class represents a single bean within the collection and contains information about the bean, such as its name and the function used to create it.
+    
+    The `BeanConflictError` and `InvalidBeanError` exceptions are used to handle errors related to bean creation and management.
+    """
+        
     OBJECT_CREATION_IDENTIFIER = "create"
     RETURN_KEY = "return"
 

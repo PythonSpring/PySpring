@@ -28,11 +28,13 @@ class ApplicationContextView(BaseModel):
 
 class ApplicationContext:
     """
-    The `ApplicationContext` class is responsible for managing the lifecycle and dependencies of components in the application.
-    It provides methods for registering components, retrieving component instances, and initializing the Inversion of Control (IoC) container.
-    The `get_component()` method retrieves a component instance based on its class. For singleton components, it ensures that the same instance is returned on subsequent calls. For prototype components, it creates a new instance on each call.
-    The `register_component()` method adds a component class to the container, making it available for retrieval.
-    The `init_ioc_container()` method initializes the IoC container by creating singleton instances of all registered components.
+    The `ApplicationContext` class is the main entry point for the application's context management. 
+    It is responsible for:
+        1. Registering and managing the lifecycle of components, controllers, bean collections, and properties.
+        2. Providing methods to retrieve instances of registered components, beans, and properties.
+        3. Initializing the Inversion of Control (IoC) container by creating singleton instances of registered components.
+        4. Injecting dependencies for registered components and controllers.
+    The `ApplicationContext` class is designed to follow the Singleton design pattern, ensuring that there is a single instance of the application context throughout the application's lifetime.
     """
 
     def __init__(self, config: ApplicationContextConfig) -> None:

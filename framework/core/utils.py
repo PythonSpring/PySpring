@@ -6,6 +6,17 @@ from loguru import logger
 
 
 def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True) -> None:
+    """
+    Dynamically imports modules from the specified file paths.
+    
+    Args:
+        module_paths (Iterable[str]): The file paths of the modules to import.
+        is_ignore_error (bool, optional): Whether to ignore any errors that occur during the import process. Defaults to True.
+    
+    Raises:
+        Exception: If an error occurs during the import process and `is_ignore_error` is False.
+    """
+        
     for module_path in module_paths:
         file_path = Path(module_path).resolve()
         module_name = file_path.stem

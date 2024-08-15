@@ -30,6 +30,20 @@ class ApplicationFileGroups(BaseModel):
 
 
 class Application:
+    """
+    The `Application` class is the main entry point for the application. 
+    It is responsible for initializing the application, registering application entities, and running the FastAPI server.
+    
+    The class performs the following tasks:
+    - Loads the application configuration from a JSON file.
+    - Creates a SQLAlchemy engine based on the configuration.
+    - Scans the application source directory for Python files and groups them into class files and model files.
+    - Scans the class files to find all classes that implement the `AppEntities` interface (Component, RestController, BeanCollection, Properties).
+    - Registers the found application entities with the `ApplicationContext`.
+    - Imports all model modules (table classes) and creates all SQLModel tables.
+    - Initializes the FastAPI application and registers all REST controllers.
+    - Runs the FastAPI server using Uvicorn.
+    """
     PY_FILE_EXTENSION = ".py"
 
     def __init__(self, app_config_path: str = "./app-config.json") -> None:
