@@ -82,7 +82,7 @@ class Application:
         logger.info(
             f"[SQLMODEL TABEL MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
         )
-        core_utils.dynamically_import_modules(self.app_file_groups.model_files)
+        core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= False)
 
     def _create_all_tables(self) -> None:
         logger.success(

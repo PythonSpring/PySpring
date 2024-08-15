@@ -5,7 +5,7 @@ from typing import Iterable
 from loguru import logger
 
 
-def dynamically_import_modules(module_paths: Iterable[str]) -> None:
+def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True) -> None:
     for module_path in module_paths:
         file_path = Path(module_path).resolve()
         module_name = file_path.stem
@@ -33,6 +33,6 @@ def dynamically_import_modules(module_paths: Iterable[str]) -> None:
                 f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}"
             )
         except Exception as error:
-            logger.exception(
-                f"[DYNAMICALLY MODULE IMPORT ERROR] Error importing {module_name}: {error}"
-            )
+            logger.exception(error)
+            if not is_ignore_error:
+                raise error
