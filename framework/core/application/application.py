@@ -5,6 +5,7 @@ from fastapi import APIRouter, FastAPI
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import create_engine
+from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
 import framework.core.utils as core_utils
@@ -62,11 +63,11 @@ class Application:
             target_dir=self.app_config.app_src_target_dir,
             target_extensions=[self.PY_FILE_EXTENSION],
         )
-        self.target_dir_absoulte_file_paths = (
+        self.target_dir_absolute_file_paths = (
             self.file_path_scanner.scan_file_paths_under_directory()
         )
         self.app_file_groups = self._group_file_paths(
-            self.target_dir_absoulte_file_paths
+            self.target_dir_absolute_file_paths
         )
         self.app_class_scanner = ClassScanner(self.app_file_groups.class_files)
         self.app_context_config = ApplicationContextConfig(
@@ -96,11 +97,33 @@ class Application:
 
     def _import_model_modules(self) -> None:
         logger.info(
-            f"[SQLMODEL TABEL MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
+            f"[SQLMODEL TABLE MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
         )
-        self.model_classes = core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error= True, target_subclasses= [PySpringModel, SQLModel])
+        def import_func_wrapper() -> set[type[object]]:
+            return core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error=False, target_subclasses=[PySpringModel, SQLModel])
         
 
+        try:
+            self.model_classes = import_func_wrapper()
+        except SqlAlehemyInvalidRequestError as error:
+            logger.warning(f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes.")
+            logger.error(f"[SQLMODEL TABLE MODEL IMPORT FAILED] Failed to import model modules: {error}")
+            self.model_classes = self._get_inheritors(PySpringModel)
+            logger.success(f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self.model_classes])}")
+
+    def _get_inheritors(self, cls: Type[object]) -> set[Type[object]]:
+        class_name_with_class_map: dict[str,Type[object]] = {}
+        for _cls in set(cls.__subclasses__()):
+            if cls.__name__ in _cls.__name__:
+                continue
+
+            class_name_with_class_map[_cls.__name__] = _cls
+        
+        return set(class_name_with_class_map.values())
+            
+            
+        
+    
     def _create_all_tables(self) -> None:
         logger.success(
             f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}"
@@ -108,6 +131,7 @@ class Application:
         SQLModel.metadata.create_all(self.sql_engine)
         PySpringModel.set_engine(self.sql_engine)
         PySpringModel.set_models(cast(list[Type[PySpringModel]],list(self.model_classes)))
+        PySpringModel.set_metadata(SQLModel.metadata)
 
     def _scan_classes_for_project(self) -> None:
         self.app_class_scanner.scan_classes_for_file_paths()
@@ -153,9 +177,9 @@ class Application:
         self.app_context._load_properties()
         self.app_context._init_ioc_container()
         self.app_context.inject_dependencies_for_component_container()
+        self.app_context.inject_dependencies_for_controller_container()
         # after injecting all deps, lifecycle (init) can be called
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
-        self.app_context.inject_dependencies_for_controller_container()
 
     def _handle_singleton_components_life_cycle(
         self, life_cycle: ComponentLifeCycle

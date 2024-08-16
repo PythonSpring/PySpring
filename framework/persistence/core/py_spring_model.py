@@ -2,7 +2,7 @@ import functools
 from typing import Any, Callable, ClassVar, Optional, TypeVar
 
 from loguru import logger
-from sqlalchemy import Engine
+from sqlalchemy import Engine, MetaData
 from sqlmodel import SQLModel, Session
 class PySpringModel(SQLModel):
     """
@@ -14,6 +14,11 @@ class PySpringModel(SQLModel):
         
     _engine: ClassVar[Optional[Engine]] = None
     _models: ClassVar[Optional[list[type["PySpringModel"]]]] = None
+    _metadata: ClassVar[Optional[MetaData]] = None
+
+    @classmethod
+    def set_metadata(cls, metadata: MetaData) -> None:
+        cls._metadata = metadata
 
 
     @classmethod
@@ -36,6 +41,12 @@ class PySpringModel(SQLModel):
             raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
         
         return cls._engine
+    
+    @classmethod
+    def get_metadata(cls) -> MetaData:
+        if cls._metadata is None:
+            raise ValueError("[METADATA NOT SET] SQL MetaData is not set")
+        return cls._metadata
     
     @classmethod
     def get_model_lookup(cls) -> dict[str, type["PySpringModel"]]:

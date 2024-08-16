@@ -46,7 +46,6 @@ class ClassScanner:
                 file_path
             )
             self.scanned_classes[file_path] = object_cls_dict
-
     def import_class_from_file(
         self, file_path: str, class_name: str
     ) -> Optional[Type[object]]:
@@ -57,7 +56,8 @@ class ClassScanner:
         if spec.loader is None:
             return
         spec.loader.exec_module(module)
-        return getattr(module, class_name, None)
+        cls = getattr(module, class_name, None)    
+        return cls
 
     def get_classes(self) -> Iterable[Type[object]]:
         classes: list[Type[object]] = []
