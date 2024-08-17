@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Callable, Mapping, Optional, Type
 
 from loguru import logger
 from pydantic import BaseModel
@@ -15,6 +15,9 @@ from framework.core.entities.component import Component, ComponentScope
 from framework.core.entities.controllers.rest_controller import RestController
 from framework.core.entities.properties.properties import Properties
 from framework.core.entities.properties.properties_loader import _PropertiesLoader
+
+
+AppEntities = Component | RestController | BeanCollection | Properties
 
 
 class ComponentNotFoundError(Exception): ...
@@ -205,10 +208,11 @@ class ApplicationContext:
                     )
                 self.singleton_bean_instance_container[view.bean_name] = view.bean
 
-    def _inject_component_dependencies(
-        self, entity: Type[Component | RestController]
+    def _inject_entity_dependencies(
+        self, entity: Type[AppEntities]
     ) -> None:
         for attr_name, annotated_entity_cls in entity.__annotations__.items():
+            is_injected: bool= False
             if annotated_entity_cls in self.primitive_types:
                 logger.warning(
                     f"[DEPENDENCY INJECTION SKIPPED] Skip inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} because it is primitive type"
@@ -219,34 +223,34 @@ class ApplicationContext:
                 optional_properties = self.get_properties(annotated_entity_cls)
                 setattr(entity, attr_name, optional_properties)
                 continue
-
-            optional_component = self.get_component(annotated_entity_cls)
-            if optional_component is not None:
-                setattr(entity, attr_name, optional_component)
+            
+            entity_getters: list[Callable]= [self.get_component, self.get_bean ]
+            
+            for getter in entity_getters:
+                optional_entity = getter(annotated_entity_cls)
+                if optional_entity is not None:
+                    setattr(entity, attr_name, optional_entity)
+                    is_injected = True
+                    break
+                    
+            if is_injected:
                 logger.success(
-                    f"[DEPENDENCY INJECTION SUCCESS FROM COMPONENT CONTAINER] Inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} singleton instance"
-                )
-                continue
-            optional_bean = self.get_bean(annotated_entity_cls)
-
-            if optional_bean is not None:
-                setattr(entity, attr_name, optional_bean)
-                logger.success(
-                    f"[DEPENDENCY INJECTION SUCCESS FROM BEAN COLLECTION CONTAINER] Inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} singleton instance"
-                )
+                        f"[DEPENDENCY INJECTION SUCCESS FROM COMPONENT CONTAINER] Inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} singleton instance"
+                    )
                 continue
 
             error_message = f"[DEPENDENCY INJECTION FAILED] Fail to inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__}, consider register such depency with Compoent decorator"
             logger.critical(error_message)
             raise ValueError(error_message)
-
-    def inject_dependencies_for_component_container(self) -> None:
-        for _component_cls_name, component_cls in self.component_cls_container.items():
-            self._inject_component_dependencies(component_cls)
-
-    def inject_dependencies_for_controller_container(self) -> None:
-        for (
-            _controller_cls_name,
-            controller_cls,
-        ) in self.controller_cls_container.items():
-            self._inject_component_dependencies(controller_cls)
+            
+    def inject_dependencies_for_app_entities(self) -> None:
+        
+        containers: list[Mapping[str, Type[AppEntities]]] = [
+            self.component_cls_container,
+             self.controller_cls_container,
+             self.bean_collection_cls_container
+        ]
+        
+        for container in containers:
+            for _cls_name, _cls in container.items():
+                self._inject_entity_dependencies(_cls)

@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 
 import framework.core.utils as core_utils
 from framework.core.application.application_config import ApplicationConfigRepository
-from framework.core.application.context.application_context import ApplicationContext
+from framework.core.application.context.application_context import AppEntities, ApplicationContext
 from framework.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
@@ -24,7 +24,6 @@ from framework.core.util_classes.file_path_scanner import FilePathScanner
 from framework.modules.framework_module import _FrameworkModule
 from framework.persistence.core.py_spring_model import PySpringModel
 
-AppEntities = Component | RestController | BeanCollection | Properties
 
 
 class ApplicationFileGroups(BaseModel):
@@ -128,9 +127,9 @@ class Application:
     def _is_from_model_file(self, cls: Type[object]) -> bool:
         try:
             source_file_name = inspect.getsourcefile(cls)
-        except TypeError:
+        except TypeError as error:
             logger.warning(
-                f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes."
+                f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes.\n Actual error: {error}"
             )
             return False
         if source_file_name is None:
@@ -215,8 +214,7 @@ class Application:
         self._register_app_entities()
         self.app_context._load_properties()
         self.app_context._init_ioc_container()
-        self.app_context.inject_dependencies_for_component_container()
-        self.app_context.inject_dependencies_for_controller_container()
+        self.app_context.inject_dependencies_for_app_entities()
         # after injecting all deps, lifecycle (init) can be called
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
 
