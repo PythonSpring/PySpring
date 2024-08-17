@@ -1,3 +1,4 @@
+import inspect
 from typing import Callable, Iterable, Type, cast
 
 import uvicorn
@@ -54,6 +55,7 @@ class Application:
         )
 
         self.module_classes = module_classes
+        self._model_classes: set[type[object]] = set()
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
         self.sql_engine = create_engine(
@@ -88,9 +90,9 @@ class Application:
         model_files: set[str] = set()
 
         for file in files:
-            for model_pattern in self.app_config.model_file_postfix_patterns:
-                if file.endswith(model_pattern):
-                    model_files.add(file)
+            py_file_name = self._get_file_base_name(file)
+            if py_file_name in self.app_config.model_file_postfix_patterns:
+                model_files.add(file)
             if file not in model_files:
                 class_files.add(file)
         return ApplicationFileGroups(class_files=class_files, model_files=model_files)
@@ -104,17 +106,35 @@ class Application:
         
 
         try:
-            self.model_classes = import_func_wrapper()
+            self._model_classes = import_func_wrapper()
         except SqlAlehemyInvalidRequestError as error:
             logger.warning(f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes.")
             logger.error(f"[SQLMODEL TABLE MODEL IMPORT FAILED] Failed to import model modules: {error}")
-            self.model_classes = self._get_inheritors(PySpringModel)
-            logger.success(f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self.model_classes])}")
+            self._model_classes = self._get_pyspring_model_inheritors()
+                
+    
+    def _is_from_model_file(self, cls: Type[object]) -> bool:
+        try:
+            source_file_name = inspect.getsourcefile(cls)
+        except TypeError:
+            logger.warning(f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes.")
+            return False
+        if source_file_name is None:
+            return False
+        py_file_name = self._get_file_base_name(source_file_name) # e.g., models.py
+        return py_file_name in self.app_config.model_file_postfix_patterns
+    
+    def _get_file_base_name(self, file_path: str) -> str:
+        return file_path.split("/")[-1]
 
-    def _get_inheritors(self, cls: Type[object]) -> set[Type[object]]:
-        class_name_with_class_map: dict[str,Type[object]] = {}
-        for _cls in set(cls.__subclasses__()):
-            if cls.__name__ in _cls.__name__:
+    def _get_pyspring_model_inheritors(self) -> set[Type[object]]:
+        # use dict to store all models, use a session to check if all models are mapped
+        class_name_with_class_map: dict[str, Type[object]] = {}
+        for _cls in set(PySpringModel.__subclasses__()):
+            if _cls.__name__ in class_name_with_class_map:
+                continue
+            if not self._is_from_model_file(_cls):
+                logger.warning(f"[SQLMODEL TABLE MODEL IMPORT] {_cls.__name__} is not from model file, skip it.")
                 continue
 
             class_name_with_class_map[_cls.__name__] = _cls
@@ -129,8 +149,10 @@ class Application:
             f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}"
         )
         SQLModel.metadata.create_all(self.sql_engine)
+        logger.success(f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self._model_classes])}")
+
         PySpringModel.set_engine(self.sql_engine)
-        PySpringModel.set_models(cast(list[Type[PySpringModel]],list(self.model_classes)))
+        PySpringModel.set_models(cast(list[Type[PySpringModel]],list(self._model_classes)))
         PySpringModel.set_metadata(SQLModel.metadata)
 
     def _scan_classes_for_project(self) -> None:
@@ -221,6 +243,5 @@ class Application:
             self.__init_controllers()
             self.__enable_modules()
             self.__run_server()
-        
         finally:
             self._handle_singleton_components_life_cycle(ComponentLifeCycle.Destruction)

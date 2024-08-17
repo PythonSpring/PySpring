@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Iterable, Type
 
 from loguru import logger
-
+from sqlalchemy.orm.base import object_mapper
+from sqlalchemy.orm.exc import UnmappedInstanceError as SqlAlchemyUnmappedInstanceError
 
 def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True, target_subclasses: Iterable[Type[object]] = []) -> set[Type[object]]:
     """
@@ -70,3 +71,16 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
                 returned_target_classes.add(loaded_class)
         
     return returned_target_classes
+
+
+
+
+def is_sqlalchemy_mapped(obj: object) -> bool:
+    try:
+        object_mapper(obj)
+    except SqlAlchemyUnmappedInstanceError:
+        return False
+    return True
+
+def is_builtin_class_instance(obj: object) -> bool:
+    return obj.__class__.__module__ == '__builtin__'

@@ -11,7 +11,6 @@ class PySpringModel(SQLModel):
     The `engine` class variable is an optional reference to an SQLAlchemy Engine instance,
     which can be used for database operations related to this model.
     """
-        
     _engine: ClassVar[Optional[Engine]] = None
     _models: ClassVar[Optional[list[type["PySpringModel"]]]] = None
     _metadata: ClassVar[Optional[MetaData]] = None
@@ -70,13 +69,13 @@ def Transactional(func: FT) -> FT:
             # Inject the session into the function's arguments
             if not isinstance(kwargs.get("session"), Session):
                 kwargs['session'] = session
-            
             result = func(*args, **kwargs)
             # Commit the transaction if everything went well
             session.commit()
             return result
         except Exception as error:
             # Rollback the transaction in case of an exception
+            logger.warning("[SESSION ROLLBACK] Rolling back transaction due to an exception")
             session.rollback()
             logger.exception(error)
             raise error
