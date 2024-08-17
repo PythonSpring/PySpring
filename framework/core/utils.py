@@ -7,19 +7,24 @@ from loguru import logger
 from sqlalchemy.orm.base import object_mapper
 from sqlalchemy.orm.exc import UnmappedInstanceError as SqlAlchemyUnmappedInstanceError
 
-def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: bool = True, target_subclasses: Iterable[Type[object]] = []) -> set[Type[object]]:
+
+def dynamically_import_modules(
+    module_paths: Iterable[str],
+    is_ignore_error: bool = True,
+    target_subclasses: Iterable[Type[object]] = [],
+) -> set[Type[object]]:
     """
     Dynamically imports modules from the specified file paths.
-    
+
     Args:
         module_paths (Iterable[str]): The file paths of the modules to import.
         is_ignore_error (bool, optional): Whether to ignore any errors that occur during the import process. Defaults to True.
-    
+
     Raises:
         Exception: If an error occurs during the import process and `is_ignore_error` is False.
     """
     all_loaded_classes: list[Type[object]] = []
-        
+
     for module_path in module_paths:
         file_path = Path(module_path).resolve()
         module_name = file_path.stem
@@ -41,16 +46,18 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
             continue
 
         # Execute the module in its own namespace
-   
+
         logger.info(f"[DYNAMICALLY MODULE IMPORT] Import module: {module_name}")
         try:
             spec.loader.exec_module(module)
-            logger.success(f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}")
+            logger.success(
+                f"[DYNAMICALLY MODULE IMPORT] Successfully imported {module_name}"
+            )
         except Exception as error:
             logger.warning(error)
             if not is_ignore_error:
                 raise error
-            
+
         loaded_classes = []
         for attr in dir(module):
             obj = getattr(module, attr)
@@ -60,8 +67,7 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
                 continue
             loaded_classes.append(obj)
         all_loaded_classes.extend(loaded_classes)
-        
-            
+
     returned_target_classes: set[Type[object]] = set()
     for target_cls in target_subclasses:
         for loaded_class in all_loaded_classes:
@@ -69,10 +75,8 @@ def dynamically_import_modules(module_paths: Iterable[str], is_ignore_error: boo
                 continue
             if issubclass(loaded_class, target_cls):
                 returned_target_classes.add(loaded_class)
-        
+
     return returned_target_classes
-
-
 
 
 def is_sqlalchemy_mapped(obj: object) -> bool:
@@ -82,5 +86,6 @@ def is_sqlalchemy_mapped(obj: object) -> bool:
         return False
     return True
 
+
 def is_builtin_class_instance(obj: object) -> bool:
-    return obj.__class__.__module__ == '__builtin__'
+    return obj.__class__.__module__ == "__builtin__"

@@ -28,7 +28,7 @@ class ApplicationContextView(BaseModel):
 
 class ApplicationContext:
     """
-    The `ApplicationContext` class is the main entry point for the application's context management. 
+    The `ApplicationContext` class is the main entry point for the application's context management.
     It is responsible for:
         1. Registering and managing the lifecycle of components, controllers, bean collections, and properties.
         2. Providing methods to retrieve instances of registered components, beans, and properties.

@@ -14,7 +14,7 @@ class _PropertiesLoader:
     The `load_properties` method returns a dictionary of `Properties` instances, where the keys match the keys in the properties file.
     The `get_properties` method provides a way to retrieve a specific `Properties` instance by its key, if it has been previously loaded.
     """
-        
+
     optional_loaded_properties: dict[str, Properties] = {}
 
     def __init__(

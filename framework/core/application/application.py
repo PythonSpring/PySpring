@@ -34,9 +34,9 @@ class ApplicationFileGroups(BaseModel):
 
 class Application:
     """
-    The `Application` class is the main entry point for the application. 
+    The `Application` class is the main entry point for the application.
     It is responsible for initializing the application, registering application entities, and running the FastAPI server.
-    
+
     The class performs the following tasks:
     - Loads the application configuration from a JSON file.
     - Creates a SQLAlchemy engine based on the configuration.
@@ -47,9 +47,14 @@ class Application:
     - Initializes the FastAPI application and registers all REST controllers.
     - Runs the FastAPI server using Uvicorn.
     """
+
     PY_FILE_EXTENSION = ".py"
 
-    def __init__(self, app_config_path: str = "./app-config.json", module_classes: Iterable[Type[_FrameworkModule]] = list()) -> None:
+    def __init__(
+        self,
+        app_config_path: str = "./app-config.json",
+        module_classes: Iterable[Type[_FrameworkModule]] = list(),
+    ) -> None:
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
         )
@@ -101,29 +106,38 @@ class Application:
         logger.info(
             f"[SQLMODEL TABLE MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
         )
+
         def import_func_wrapper() -> set[type[object]]:
-            return core_utils.dynamically_import_modules(self.app_file_groups.model_files, is_ignore_error=False, target_subclasses=[PySpringModel, SQLModel])
-        
+            return core_utils.dynamically_import_modules(
+                self.app_file_groups.model_files,
+                is_ignore_error=False,
+                target_subclasses=[PySpringModel, SQLModel],
+            )
 
         try:
             self._model_classes = import_func_wrapper()
         except SqlAlehemyInvalidRequestError as error:
-            logger.warning(f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes.")
-            logger.error(f"[SQLMODEL TABLE MODEL IMPORT FAILED] Failed to import model modules: {error}")
+            logger.warning(
+                f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes."
+            )
+            logger.error(
+                f"[SQLMODEL TABLE MODEL IMPORT FAILED] Failed to import model modules: {error}"
+            )
             self._model_classes = self._get_pyspring_model_inheritors()
-                
-    
+
     def _is_from_model_file(self, cls: Type[object]) -> bool:
         try:
             source_file_name = inspect.getsourcefile(cls)
         except TypeError:
-            logger.warning(f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes.")
+            logger.warning(
+                f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes."
+            )
             return False
         if source_file_name is None:
             return False
-        py_file_name = self._get_file_base_name(source_file_name) # e.g., models.py
+        py_file_name = self._get_file_base_name(source_file_name)  # e.g., models.py
         return py_file_name in self.app_config.model_file_postfix_patterns
-    
+
     def _get_file_base_name(self, file_path: str) -> str:
         return file_path.split("/")[-1]
 
@@ -134,25 +148,28 @@ class Application:
             if _cls.__name__ in class_name_with_class_map:
                 continue
             if not self._is_from_model_file(_cls):
-                logger.warning(f"[SQLMODEL TABLE MODEL IMPORT] {_cls.__name__} is not from model file, skip it.")
+                logger.warning(
+                    f"[SQLMODEL TABLE MODEL IMPORT] {_cls.__name__} is not from model file, skip it."
+                )
                 continue
 
             class_name_with_class_map[_cls.__name__] = _cls
-        
+
         return set(class_name_with_class_map.values())
-            
-            
-        
-    
+
     def _create_all_tables(self) -> None:
         logger.success(
             f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}"
         )
         SQLModel.metadata.create_all(self.sql_engine)
-        logger.success(f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self._model_classes])}")
+        logger.success(
+            f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self._model_classes])}"
+        )
 
         PySpringModel.set_engine(self.sql_engine)
-        PySpringModel.set_models(cast(list[Type[PySpringModel]],list(self._model_classes)))
+        PySpringModel.set_models(
+            cast(list[Type[PySpringModel]], list(self._model_classes))
+        )
         PySpringModel.set_metadata(SQLModel.metadata)
 
     def _scan_classes_for_project(self) -> None:
