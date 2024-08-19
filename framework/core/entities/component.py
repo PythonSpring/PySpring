@@ -34,12 +34,8 @@ class Component:
     The `get_scope()` and `set_scope()` methods allow you to get and set the scope of the component.
 
     The lifecycle hooks are:
-    - `pre_initialize()`: Called before the component is initialized.
-    - `initialize()`: Called during the initialization of the component.
     - `post_initialize()`: Called after the component is initialized.
     - `pre_destroy()`: Called before the component is destroyed.
-    - `destroy()`: Called during the destruction of the component.
-    - `post_destroy()`: Called after the component is destroyed.
 
     The `finish_initialization_cycle()` and `finish_destruction_cycle()` methods are final and call the corresponding lifecycle hooks in the correct order.
     """
@@ -63,38 +59,18 @@ class Component:
     def set_scope(cls, scope: ComponentScope) -> None:
         cls.Config.scope = scope
 
-    def pre_initialize(self) -> None:
-        """Hook method called before initialization"""
-        pass
-
-    def initialize(self) -> None:
-        """Hook method called during initialization"""
-        pass
-
-    def post_initialize(self) -> None:
-        """Hook method called after initialization"""
+    def post_construct(self) -> None: 
+        """Hook method called after construction (i.e., __init__)"""
         pass
 
     def pre_destroy(self) -> None:
         """Hook method called before destruction"""
         pass
 
-    def destroy(self) -> None:
-        """Hook method called during destruction"""
-        pass
-
-    def post_destroy(self) -> None:
-        """Hook method called after destruction"""
-        pass
-
     @final
     def finish_initialization_cycle(self) -> None:
-        self.pre_initialize()
-        self.initialize()
-        self.post_initialize()
+        self.post_construct()
 
     @final
     def finish_destruction_cycle(self) -> None:
         self.pre_destroy()
-        self.destroy()
-        self.post_destroy()
