@@ -3,6 +3,7 @@ from typing import Any, Callable, ClassVar, Optional, TypeVar
 
 from loguru import logger
 from sqlalchemy import Engine, MetaData
+from sqlalchemy.engine.base import Connection
 from sqlmodel import Session, SQLModel
 
 
@@ -17,6 +18,7 @@ class PySpringModel(SQLModel):
     _engine: ClassVar[Optional[Engine]] = None
     _models: ClassVar[Optional[list[type["PySpringModel"]]]] = None
     _metadata: ClassVar[Optional[MetaData]] = None
+    _connection: ClassVar[Optional[Connection]] = None
 
     @classmethod
     def set_metadata(cls, metadata: MetaData) -> None:
@@ -42,6 +44,17 @@ class PySpringModel(SQLModel):
             raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
 
         return cls._engine
+    
+    @classmethod
+    def get_connection(cls) -> Connection:
+        if cls._connection is not None:
+            return cls._connection
+        
+        if cls._engine is None:
+            raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
+        
+        cls._connection = cls._engine.connect()
+        return cls._connection
 
     @classmethod
     def get_metadata(cls) -> MetaData:

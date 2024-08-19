@@ -4,7 +4,6 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    TypedDict,
     TypeVar,
     Union,
     get_args,
@@ -16,20 +15,15 @@ from sqlalchemy import Select
 from sqlmodel import Session, SQLModel, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from framework.persistence.core.py_spring_model import PySpringModel, Transactional
+from framework.persistence.core.py_spring_model import Transactional
 from framework.persistence.repositories.repository_base import RepositoryBase
 
 T = TypeVar("T", bound=SQLModel)
 ID = TypeVar("ID", UUID, int)
 
-
-class SQLConnectionParam(TypedDict):
-    url: str
-
-
 class CrudRepository(RepositoryBase, Generic[ID, T]):
     def __init__(self) -> None:
-        self.engine = PySpringModel.get_engine()
+        super().__init__()
         self.id_type, self.model_class = self._get_model_id_type_with_class()
 
     @classmethod
