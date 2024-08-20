@@ -8,6 +8,7 @@ from sqlmodel import Session, SQLModel
 
 
 
+
 class PySpringModel(SQLModel):
     """
     Represents a PySpring model, which is a subclass of SQLModel.
@@ -116,7 +117,7 @@ def session_auto_commit(func: FT) -> FT:
             return result
         except Exception as error:
             session.rollback()
-            logger.error(f"Transaction failed: {error}")
+            logger.error(f"[TRANSACTION ROLLBACK] Transaction failed: {error}")
             raise error
         finally:
             if kwargs.get('session') is None:

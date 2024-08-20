@@ -1,8 +1,8 @@
 from typing import Type, TypeVar
 
-from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import text
+from sqlmodel import Session
 from framework.core.entities.component import Component
 from framework.persistence.core.py_spring_model import PySpringModel
 
@@ -19,3 +19,6 @@ class RepositoryBase(Component):
         results = [model_cls.model_validate(dict(row)) for row in dict_results]
         cursor.close()
         return results
+    
+    def _create_session(self) -> Session:
+        return Session(self.engine, expire_on_commit=False)
