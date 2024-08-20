@@ -165,7 +165,9 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
             session = self._create_session()
         
         entities = self.find_all_by_ids(ids, session)
-        return self.delete_all(entities, session)
+        for entity in entities:
+            session.delete(entity)
+        return True
     
     @session_auto_commit
     def upsert(self, entity: T, query_by: dict[str, Any],session: Optional[Session] = None) -> T:
