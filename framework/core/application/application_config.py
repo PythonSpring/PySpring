@@ -8,14 +8,16 @@ from framework.persistence.repositories.json_config_repository import (
 class ServerConfig(BaseModel):
     """
     Represents the configuration for the application server.
-
+    
     Attributes:
         host: The host address for the server.
         port: The port number for the server.
+        enabled: A boolean flag indicating whether the server is enabled.
     """
 
     host: str
     port: int
+    enabled: bool = Field(default=True)
 
 
 class ApplicationConfig(BaseModel):

@@ -257,6 +257,7 @@ class Application:
             self.__init_app()
             self.__init_controllers()
             self.__enable_modules()
-            self.__run_server()
+            if self.app_config.server_config.enabled:
+                self.__run_server()
         finally:
             self._handle_singleton_components_life_cycle(ComponentLifeCycle.Destruction)

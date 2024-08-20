@@ -7,6 +7,7 @@ from sqlalchemy.engine.base import Connection
 from sqlmodel import Session, SQLModel
 
 
+
 class PySpringModel(SQLModel):
     """
     Represents a PySpring model, which is a subclass of SQLModel.
@@ -76,15 +77,15 @@ class PySpringModel(SQLModel):
 
 FT = TypeVar("FT", bound=Callable[..., Any])
 
-
 def Transactional(func: FT) -> FT:
     @functools.wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         # Start a new session
-        session: Session = PySpringModel.create_session()
+        
         try:
             # Inject the session into the function's arguments
             if not isinstance(kwargs.get("session"), Session):
+                session: Session = PySpringModel.create_session()
                 kwargs["session"] = session
             result = func(*args, **kwargs)
             # Commit the transaction if everything went well
@@ -103,3 +104,22 @@ def Transactional(func: FT) -> FT:
             session.close()
 
     return wrapper  # type: ignore
+
+
+def session_auto_commit(func: FT) -> FT:
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        session: Session = kwargs.get('session') or self._create_session()
+        try:
+            result = func(self, *args, session=session, **kwargs)
+            session.commit()
+            return result
+        except Exception as error:
+            session.rollback()
+            logger.error(f"Transaction failed: {error}")
+            raise error
+        finally:
+            if kwargs.get('session') is None:
+                session.close()
+    
+    return wrapper # type: ignore

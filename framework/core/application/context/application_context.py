@@ -1,4 +1,4 @@
-from typing import Callable, Mapping, Optional, Type
+from typing import Callable, Mapping, Optional, Type, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
@@ -19,6 +19,8 @@ from framework.core.entities.properties.properties_loader import _PropertiesLoad
 
 AppEntities = Component | RestController | BeanCollection | Properties
 
+
+T = TypeVar("T", bound=AppEntities)
 
 class ComponentNotFoundError(Exception): ...
 
@@ -68,7 +70,7 @@ class ApplicationContext:
             ),
         )
 
-    def get_component(self, component_cls: Type[Component]) -> Optional[Component]:
+    def get_component(self, component_cls: Type[T]) -> Optional[T]:
         if not issubclass(component_cls, Component):
             return
 
@@ -82,19 +84,19 @@ class ApplicationContext:
                 optional_instance = self.singleton_component_instance_container.get(
                     component_cls_name
                 )
-                return optional_instance
+                return optional_instance # type: ignore
 
             case ComponentScope.Prototype:
                 prototype_instance = component_cls()
                 return prototype_instance
 
-    def get_bean(self, object_cls: Type[object]) -> Optional[object]:
+    def get_bean(self, object_cls: Type[T]) -> Optional[T]:
         bean_name = object_cls.__name__
         if bean_name not in self.singleton_bean_instance_container:
             return
 
         optional_instance = self.singleton_bean_instance_container.get(bean_name)
-        return optional_instance
+        return optional_instance # type: ignore
 
     def get_properties(self, properties_cls: Type[Properties]) -> Optional[Properties]:
         properties_cls_name = properties_cls.get_key()
