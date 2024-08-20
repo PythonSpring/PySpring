@@ -106,11 +106,14 @@ def Transactional(func: FT) -> FT:
 
     return wrapper  # type: ignore
 
+class SessionNotFoundError(Exception): ...
 
 def session_auto_commit(func: FT) -> FT:
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        session: Session = kwargs.get('session') or self._create_session()
+        session: Optional[Session] = kwargs.get('session')
+        if session is None:
+            raise SessionNotFoundError("[SESSION NOT FOUND] Session not found in kwargs.")
         try:
             result = func(self, *args, session=session, **kwargs)
             session.commit()
