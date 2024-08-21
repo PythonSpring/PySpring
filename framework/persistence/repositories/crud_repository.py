@@ -158,9 +158,7 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
     @session_auto_commit
     def upsert(self, entity: T, query_by: dict[str, Any],session: Optional[Session] = None) -> T:
         session = session or self._create_session()
-        # Check if the entity already exists in the database by its ID
-
-
+        
         statement = select(self.model_class).filter_by(**query_by)  # type: ignore
         _, existing_entity = self._find_by_statement(statement, session)
         if existing_entity is not None:

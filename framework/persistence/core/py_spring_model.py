@@ -111,9 +111,7 @@ class SessionNotFoundError(Exception): ...
 def session_auto_commit(func: FT) -> FT:
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        session: Optional[Session] = kwargs.get('session')
-        if session is None:
-            raise SessionNotFoundError("[SESSION NOT FOUND] Session not found in kwargs.")
+        session: Session = kwargs.get('session') or self._create_session()
         try:
             result = func(self, *args, session=session, **kwargs)
             session.commit()
