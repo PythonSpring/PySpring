@@ -68,16 +68,25 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
 
         statement = select(self.model_class).filter_by(**query_by)
         return session, session.exec(statement).first()
+    
+    def _find_all_by_query(
+        self,
+        query_by: dict[str, Any],
+        session: Optional[Session] = None,
+    ) -> tuple[Session, list[T]]:
+        session = session or self._create_session()
 
-    def _find_all_by(
+        statement = select(self.model_class).filter_by(**query_by)
+        return session, list(session.exec(statement).fetchall())
+
+    def _find_all_by_statement(
         self,
         statement: Union[Select, SelectOfScalar],
         session: Optional[Session] = None,
     ) -> tuple[Session, list[T]]:
         session = session or self._create_session()
 
-        return session, list(session.exec(statement))
-
+        return session, list(session.exec(statement).fetchall())
     
 
     def find_by_id(self, id: ID, session: Optional[Session] = None) -> Optional[T]:
