@@ -197,7 +197,8 @@ class ApplicationContext:
                 f"[INITIALIZING SINGLETON BEAN] Init singleton bean: {bean_collection_cls_name}"
             )
             collection = bean_collection_cls()
-            # before scanning beans, make sure properties is loaded in _PropertiesLoader by calling load_properties inside Application class
+            # before injecting_bean_collection deps and scanning beans, make sure properties is loaded in _PropertiesLoader by calling load_properties inside Application class
+            self._inject_dependencies_for_bean_collection(bean_collection_cls)
             bean_views = collection.scan_beans()
             for view in bean_views:
                 if view.bean_name in self.singleton_bean_instance_container:
@@ -244,13 +245,17 @@ class ApplicationContext:
             error_message = f"[DEPENDENCY INJECTION FAILED] Fail to inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__}, consider register such depency with Compoent decorator"
             logger.critical(error_message)
             raise ValueError(error_message)
+    def _inject_dependencies_for_bean_collection(self, bean_collection_cls: Type[BeanCollection]) -> None:
+        logger.info(
+            f"[BEAN COLLECTION DEPENDENCY INJECTION] Injecting dependencies for {bean_collection_cls.get_name()}"
+        )
+        self._inject_entity_dependencies(bean_collection_cls)
             
     def inject_dependencies_for_app_entities(self) -> None:
         
         containers: list[Mapping[str, Type[AppEntities]]] = [
             self.component_cls_container,
-             self.controller_cls_container,
-             self.bean_collection_cls_container
+             self.controller_cls_container
         ]
         
         for container in containers:
