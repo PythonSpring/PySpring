@@ -1,3 +1,4 @@
+from inspect import isclass
 from typing import Callable, Mapping, Optional, Type, TypeVar
 
 from loguru import logger
@@ -221,7 +222,10 @@ class ApplicationContext:
                     f"[DEPENDENCY INJECTION SKIPPED] Skip inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} because it is primitive type"
                 )
                 continue
-
+            
+            if not isclass(annotated_entity_cls):
+                continue
+            
             if issubclass(annotated_entity_cls, Properties):
                 optional_properties = self.get_properties(annotated_entity_cls)
                 setattr(entity, attr_name, optional_properties)
