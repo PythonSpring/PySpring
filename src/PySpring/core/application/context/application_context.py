@@ -4,18 +4,18 @@ from typing import Callable, Mapping, Optional, Type, TypeVar
 from loguru import logger
 from pydantic import BaseModel
 
-from framework.core.application.context.application_context_config import (
+from PySpring.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
-from framework.core.entities.bean_collection import (
+from PySpring.core.entities.bean_collection import (
     BeanCollection,
     BeanConflictError,
     InvalidBeanError,
 )
-from framework.core.entities.component import Component, ComponentScope
-from framework.core.entities.controllers.rest_controller import RestController
-from framework.core.entities.properties.properties import Properties
-from framework.core.entities.properties.properties_loader import _PropertiesLoader
+from PySpring.core.entities.component import Component, ComponentScope
+from PySpring.core.entities.controllers.rest_controller import RestController
+from PySpring.core.entities.properties.properties import Properties
+from PySpring.core.entities.properties.properties_loader import _PropertiesLoader
 
 
 AppEntities = Component | RestController | BeanCollection | Properties

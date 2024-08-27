@@ -3,8 +3,8 @@ from typing import Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlmodel import Session
-from framework.core.entities.component import Component
-from framework.persistence.core.py_spring_model import PySpringModel
+from PySpring.core.entities.component import Component
+from PySpring.persistence.core.py_spring_model import PySpringModel
 
 T = TypeVar("T", bound=BaseModel)
 
