@@ -14,8 +14,8 @@ from sqlalchemy import Select
 from sqlmodel import Session, SQLModel, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from PySpring.persistence.core.py_spring_model import session_auto_commit
-from PySpring.persistence.repositories.repository_base import RepositoryBase
+from framework.persistence.core.py_spring_model import session_auto_commit
+from framework.persistence.repositories.repository_base import RepositoryBase
 
 T = TypeVar("T", bound=SQLModel)
 ID = TypeVar("ID", UUID, int)

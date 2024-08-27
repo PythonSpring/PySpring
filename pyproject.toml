@@ -59,7 +59,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
-version = { source = "file", path = "src/__init__.py" }
+version = { source = "file", path = "framework/__init__.py" }
 distribution = true
 
 [tool.pdm.build]

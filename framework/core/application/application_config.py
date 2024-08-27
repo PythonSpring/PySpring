@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from PySpring.persistence.repositories.json_config_repository import (
+from framework.persistence.repositories.json_config_repository import (
     JsonConfigRepository,
 )
 
