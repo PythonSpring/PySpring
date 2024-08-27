@@ -3,7 +3,7 @@ from typing import Optional, Type
 
 import yaml
 
-from framework.core.entities.properties.properties import Properties
+from py_spring.core.entities.properties.properties import Properties
 
 
 class _PropertiesLoader:

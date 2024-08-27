@@ -9,20 +9,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
-import framework.core.utils as core_utils
-from framework.core.application.application_config import ApplicationConfigRepository
-from framework.core.application.context.application_context import AppEntities, ApplicationContext
-from framework.core.application.context.application_context_config import (
+import py_spring.core.utils as core_utils
+from py_spring.core.application.application_config import ApplicationConfigRepository
+from py_spring.core.application.context.application_context import AppEntities, ApplicationContext
+from py_spring.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
-from framework.core.entities.bean_collection import BeanCollection
-from framework.core.entities.component import Component, ComponentLifeCycle
-from framework.core.entities.controllers.rest_controller import RestController
-from framework.core.entities.properties.properties import Properties
-from framework.core.util_classes.class_scanner import ClassScanner
-from framework.core.util_classes.file_path_scanner import FilePathScanner
-from framework.modules.framework_module import _FrameworkModule
-from framework.persistence.core.py_spring_model import PySpringModel
+from py_spring.core.entities.bean_collection import BeanCollection
+from py_spring.core.entities.component import Component, ComponentLifeCycle
+from py_spring.core.entities.controllers.rest_controller import RestController
+from py_spring.core.entities.properties.properties import Properties
+from py_spring.core.util_classes.class_scanner import ClassScanner
+from py_spring.core.util_classes.file_path_scanner import FilePathScanner
+from py_spring.modules.framework_module import _FrameworkModule
+from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
 

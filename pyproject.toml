@@ -1,5 +1,5 @@
 [project]
-name = "PySpring"
+name = "py_spring"
 version = "1.0.0"
 description = "Default template for PDM package"
 authors = [
@@ -59,7 +59,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
-version = { source = "file", path = "framework/__init__.py" }
+version = { source = "file", path = "py_spring/__init__.py" }
 distribution = true
 
 [tool.pdm.build]
