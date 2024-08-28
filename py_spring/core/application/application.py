@@ -1,4 +1,5 @@
 import inspect
+import os
 from typing import Callable, Iterable, Type, cast
 
 import uvicorn
@@ -9,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
+from py_spring.core.util_classes.config_file_template_generator.config_file_template_generator import ConfigFileTemplateGenerator
 import py_spring.core.utils as core_utils
 from py_spring.core.application.application_config import ApplicationConfigRepository
 from py_spring.core.application.context.application_context import AppEntities, ApplicationContext
@@ -57,6 +59,10 @@ class Application:
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
         )
+        runtime_dir = os.path.dirname(app_config_path)
+        self._template_generator = ConfigFileTemplateGenerator(runtime_dir)
+        self._template_generator.generate_app_config_file_template_if_not_exists()
+        self._template_generator.generate_app_properties_file_template_if_not_exists()
 
         self.module_classes = module_classes
         self._model_classes: set[type[object]] = set()

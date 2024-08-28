@@ -50,6 +50,10 @@ class JsonConfigRepository(Generic[T]):
         with open(self.file_path, "w") as file:
             file.write(self._config.model_dump_json(indent=4))
 
+    def save_config_to_target_path(self, file_path: str) -> None:
+        with open(file_path, "w") as file:
+            file.write(self._config.model_dump_json(indent=4))
+
     def _load_config(self) -> T:
         with open(self.file_path, "r") as file:
             if BaseModel not in self.base_model_cls.__mro__:  # type: ignore
