@@ -1,3 +1,5 @@
+from .core.entities.properties.properties import Properties
+from .persistence.repositories.crud_repository import CrudRepository
 from .core.entities.controllers.rest_controller import RestController
 from .core.entities.component import Component
 from .core.entities.bean_collection import BeanCollection
