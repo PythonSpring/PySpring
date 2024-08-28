@@ -10,6 +10,14 @@ class ApplicationProperties(BaseModel): ...
 class ApplicationPropertiesRepository(JsonConfigRepository[ApplicationProperties]):...
 
 class ConfigFileTemplateGenerator:
+    """
+    Generates template configuration files for the application, including the app config and application properties files.
+    The `ConfigFileTemplateGenerator` class is responsible for generating the template configuration files if they do not already exist in the target directory. 
+    It uses the `ApplicationConfigRepository` and `ApplicationPropertiesRepository` to load the template configurations and save them to the target directory.
+    The `generate_app_config_file_template_if_not_exists` method checks if the app config file already exists in the target directory, and if not, generates the template file.
+    The `generate_app_properties_file_template_if_not_exists` method checks if the application properties file already exists in the target directory, and if not, generates the template file.
+    """
+        
     APP_CONFIG_PATH: ClassVar[list[str]] = ['templates', 'app-config.json']
     APP_PROPERTIES_PATH: ClassVar[list[str]] = ['templates', 'application-properties.json']
     def __init__(self, target_file_dir: str) -> None:
