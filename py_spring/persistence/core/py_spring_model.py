@@ -78,34 +78,6 @@ class PySpringModel(SQLModel):
 
 FT = TypeVar("FT", bound=Callable[..., Any])
 
-def Transactional(func: FT) -> FT:
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        # Start a new session
-        
-        try:
-            # Inject the session into the function's arguments
-            if not isinstance(kwargs.get("session"), Session):
-                session: Session = PySpringModel.create_session()
-                kwargs["session"] = session
-            result = func(*args, **kwargs)
-            # Commit the transaction if everything went well
-            session.commit()
-            return result
-        except Exception as error:
-            # Rollback the transaction in case of an exception
-            logger.warning(
-                "[SESSION ROLLBACK] Rolling back transaction due to an exception"
-            )
-            session.rollback()
-            logger.exception(error)
-            raise error
-        finally:
-            # Close the session
-            session.close()
-
-    return wrapper  # type: ignore
-
 class SessionNotFoundError(Exception): ...
 
 def session_auto_commit(func: FT) -> FT:
