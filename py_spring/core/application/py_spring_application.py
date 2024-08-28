@@ -1,6 +1,6 @@
 import inspect
 import os
-from typing import Callable, Iterable, Type, cast
+from typing import Any, Callable, Iterable, Type, cast
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
@@ -23,7 +23,7 @@ from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
 from py_spring.core.util_classes.class_scanner import ClassScanner
 from py_spring.core.util_classes.file_path_scanner import FilePathScanner
-from py_spring.modules.framework_module import _FrameworkModule
+from py_spring.modules.framework_module import FrameworkModule
 from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
@@ -54,7 +54,7 @@ class PySpringApplication:
     def __init__(
         self,
         app_config_path: str = "./app-config.json",
-        module_classes: Iterable[Type[_FrameworkModule]] = list(),
+        module_classes: Iterable[Type[FrameworkModule]] = list(),
     ) -> None:
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
@@ -88,7 +88,7 @@ class PySpringApplication:
         self.app_context = ApplicationContext(config=self.app_context_config)
         self.fastapi = FastAPI()
 
-        self.classes_with_handlers: dict[Type[AppEntities], Callable] = {
+        self.classes_with_handlers: dict[Type[AppEntities], Callable[[Type[Any]], None]] = {
             Component: self._handle_register_component,
             RestController: self._handle_register_rest_controller,
             BeanCollection: self._handle_register_bean_collection,

@@ -1,10 +1,9 @@
-import functools
-from typing import Any, Callable, ClassVar, Optional, TypeVar
+from typing import ClassVar, Optional
 
-from loguru import logger
 from sqlalchemy import Engine, MetaData
 from sqlalchemy.engine.base import Connection
 from sqlmodel import Session, SQLModel
+
 
 
 
@@ -76,24 +75,4 @@ class PySpringModel(SQLModel):
         return Session(engine, expire_on_commit=False)
 
 
-FT = TypeVar("FT", bound=Callable[..., Any])
 
-class SessionNotFoundError(Exception): ...
-
-def session_auto_commit(func: FT) -> FT:
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        session: Session = kwargs.get('session') or self._create_session()
-        try:
-            result = func(self, *args, session=session, **kwargs)
-            session.commit()
-            return result
-        except Exception as error:
-            session.rollback()
-            logger.error(f"[TRANSACTION ROLLBACK] Transaction failed: {error}")
-            raise error
-        finally:
-            if kwargs.get('session') is None:
-                session.close()
-    
-    return wrapper # type: ignore

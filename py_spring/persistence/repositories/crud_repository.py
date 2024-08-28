@@ -1,5 +1,7 @@
+import functools
 from typing import (
     Any,
+    Callable,
     Generic,
     Iterable,
     Optional,
@@ -10,15 +12,38 @@ from typing import (
 )
 from uuid import UUID
 
+from loguru import logger
 from sqlalchemy import Select
 from sqlmodel import Session, SQLModel, select
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-from py_spring.persistence.core.py_spring_model import session_auto_commit
 from py_spring.persistence.repositories.repository_base import RepositoryBase
 
 T = TypeVar("T", bound=SQLModel)
 ID = TypeVar("ID", UUID, int)
+
+class SessionNotFoundError(Exception): ...
+
+FT = TypeVar("FT", bound=Callable[..., Any])
+
+def session_auto_commit(func: FT) -> FT:
+    @functools.wraps(func)
+    def wrapper(self: "CrudRepository", *args, **kwargs):
+        session: Session = kwargs.get('session') or self._create_session()
+        try:
+            result = func(self, *args, session=session, **kwargs)
+            session.commit()
+            return result
+        except Exception as error:
+            session.rollback()
+            logger.error(f"[TRANSACTION ROLLBACK] Transaction failed: {error}")
+            raise error
+        finally:
+            if kwargs.get('session') is None:
+                session.close()
+    
+    return wrapper # type: ignore
+
 
 
 class CrudRepository(RepositoryBase, Generic[ID, T]):

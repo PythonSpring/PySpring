@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRouter
 
 
-class _FrameworkModule(ABC):
+class FrameworkModule(ABC):
     __key__: Optional[str] = None
     """
     Represents a module within the framework.
