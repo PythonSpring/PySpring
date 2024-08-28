@@ -33,7 +33,7 @@ class ApplicationFileGroups(BaseModel):
     model_files: set[str]
 
 
-class Application:
+class PySpringApplication:
     """
     The `Application` class is the main entry point for the application.
     It is responsible for initializing the application, registering application entities, and running the FastAPI server.
