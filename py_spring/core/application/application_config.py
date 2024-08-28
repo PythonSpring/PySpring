@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from py_spring.persistence.repositories.json_config_repository import (
     JsonConfigRepository,
@@ -31,6 +31,7 @@ class ApplicationConfig(BaseModel):
         properties_file_path: The file path for the application properties.
         model_file_postfix_patterns: A list of file name patterns for model (for table creation) files.
     """
+    model_config = ConfigDict(protected_namespaces=())
 
     app_src_target_dir: str
     server_config: ServerConfig

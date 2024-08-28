@@ -1,7 +1,7 @@
 from typing import Callable
 
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from py_spring.core.entities.component import Component
 from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
@@ -15,8 +15,7 @@ class BeanView(BaseModel):
     The `is_valid_bean()` method checks whether the bean name matches the name of the bean's class.
     """
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     bean_creation_func: Callable[..., Component] = Field(exclude=True)
     bean_name: str

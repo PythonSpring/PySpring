@@ -5,7 +5,7 @@ from typing import Any, Callable, Iterable, Type, cast
 import uvicorn
 from fastapi import APIRouter, FastAPI
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
@@ -29,6 +29,7 @@ from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
 class ApplicationFileGroups(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     class_files: set[str]
     model_files: set[str]
 
