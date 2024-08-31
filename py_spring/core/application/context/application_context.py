@@ -228,6 +228,10 @@ class ApplicationContext:
             
             if issubclass(annotated_entity_cls, Properties):
                 optional_properties = self.get_properties(annotated_entity_cls)
+                if optional_properties is None:
+                    raise TypeError(
+                        f"[PROPERTIES INJECTION ERROR] Properties: {annotated_entity_cls.get_name()} is not found in properties file for class: {annotated_entity_cls.get_name()} with key: {annotated_entity_cls.get_key()}"
+                    )
                 setattr(entity, attr_name, optional_properties)
                 continue
             
@@ -242,7 +246,7 @@ class ApplicationContext:
                     
             if is_injected:
                 logger.success(
-                        f"[DEPENDENCY INJECTION SUCCESS FROM COMPONENT CONTAINER] Inject dependency for attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} singleton instance"
+                        f"[DEPENDENCY INJECTION SUCCESS FROM COMPONENT CONTAINER] Inject dependency for {annotated_entity_cls.__name__} in attribute: {attr_name} with dependency: {annotated_entity_cls.__name__} singleton instance"
                     )
                 continue
 
