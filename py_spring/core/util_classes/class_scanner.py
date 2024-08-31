@@ -19,10 +19,12 @@ class ClassScanner:
         self.scanned_classes: dict[str, dict[str, Type[object]]] = {}
 
     def extract_classes_from_file(self, file_path: str) -> dict[str, Type[object]]:
-        class_objects: dict[str, Type[object]] = {}
         with open(file_path, "r") as file:
             file_content: str = file.read()
-
+            return self._extract_classes_from_file_content(file_path, file_content)
+        
+    def _extract_classes_from_file_content(self, file_path: str, file_content: str) -> dict[str, Type[object]]:
+        class_objects: dict[str, Type[object]] = {}
         tree = ast.parse(file_content)
         class_names: list[str] = [
             node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
