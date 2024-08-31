@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import Generator, Type, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -21,4 +21,4 @@ class RepositoryBase(Component):
         return results
     
     def _create_session(self) -> Session:
-        return Session(self.engine, expire_on_commit=False)
+        return PySpringModel.create_session()

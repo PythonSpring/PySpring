@@ -39,8 +39,7 @@ def session_auto_commit(func: FT) -> FT:
             logger.error(f"[TRANSACTION ROLLBACK] Transaction failed: {error}")
             raise error
         finally:
-            if kwargs.get('session') is None:
-                session.close()
+            session.close()
     
     return wrapper # type: ignore
 
