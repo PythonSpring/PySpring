@@ -36,11 +36,10 @@ class _PropertiesLoader:
     def _load_properties_dict(self) -> dict[str, dict]:
         file_extension = self.properties_path.split(".")[-1]
         with open(self.properties_path, "r") as properties_file:
+            file_content = properties_file.read()
             for extension, loader_func in self.extension_loader_lookup.items():
                 if file_extension != extension:
                     continue
-
-                file_content = properties_file.read()
                 return loader_func(file_content)
         raise ValueError(f"Unsupported file extension: {file_extension}")
 
