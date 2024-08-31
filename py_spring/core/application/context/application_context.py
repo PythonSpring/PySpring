@@ -152,7 +152,7 @@ class ApplicationContext:
     def get_singleton_bean_instances(self) -> list[object]:
         return [_cls for _cls in self.singleton_bean_instance_container.values()]
 
-    def _load_properties(self) -> None:
+    def load_properties(self) -> None:
         properties_loader = self._create_properties_loader()
         properties_instance_dict = properties_loader.load_properties()
         for properties_key, properties_cls in self.properties_cls_container.items():
@@ -171,7 +171,7 @@ class ApplicationContext:
             self.singleton_properties_instance_container
         )
 
-    def _init_ioc_container(self) -> None:
+    def init_ioc_container(self) -> None:
         """
         Initializes the IoC (Inversion of Control) container by creating singleton instances of all registered components.
         This method iterates through the registered component classes in the `component_cls_container` dictionary.

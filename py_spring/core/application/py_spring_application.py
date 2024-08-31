@@ -219,8 +219,8 @@ class PySpringApplication:
         self._import_model_modules()
         self._create_all_tables()
         self._register_app_entities()
-        self.app_context._load_properties()
-        self.app_context._init_ioc_container()
+        self.app_context.load_properties()
+        self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
         # after injecting all deps, lifecycle (init) can be called
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
