@@ -1,4 +1,3 @@
-
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional
 
@@ -22,6 +21,7 @@ class FrameworkModule(ABC):
     The `enabled()` method is called after all modules have been initialized. It allows the module to perform any steps required for setting up the module
     This allows each module to define its own set of API endpoints.
     """
+
     def __init__(self, fastapi: FastAPI) -> None:
         pass
 
@@ -32,9 +32,11 @@ class FrameworkModule(ABC):
     @abstractmethod
     def enabled(self) -> None:
         raise NotImplementedError()
-    
+
     @classmethod
     def get_module_name(cls) -> str:
         if cls.__key__ is None:
-            raise ValueError(f"[MODULE KEY NOT SET] Module: {cls.__name__} __key__ is not set")
+            raise ValueError(
+                f"[MODULE KEY NOT SET] Module: {cls.__name__} __key__ is not set"
+            )
         return cls.__key__

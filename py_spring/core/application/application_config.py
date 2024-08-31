@@ -8,7 +8,7 @@ from py_spring.persistence.repositories.json_config_repository import (
 class ServerConfig(BaseModel):
     """
     Represents the configuration for the application server.
-    
+
     Attributes:
         host: The host address for the server.
         port: The port number for the server.
@@ -31,6 +31,7 @@ class ApplicationConfig(BaseModel):
         properties_file_path: The file path for the application properties.
         model_file_postfix_patterns: A list of file name patterns for model (for table creation) files.
     """
+
     model_config = ConfigDict(protected_namespaces=())
 
     app_src_target_dir: str

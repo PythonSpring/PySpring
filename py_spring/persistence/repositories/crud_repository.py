@@ -22,14 +22,17 @@ from py_spring.persistence.repositories.repository_base import RepositoryBase
 T = TypeVar("T", bound=SQLModel)
 ID = TypeVar("ID", UUID, int)
 
+
 class SessionNotFoundError(Exception): ...
 
+
 FT = TypeVar("FT", bound=Callable[..., Any])
+
 
 def session_auto_commit(func: FT) -> FT:
     @functools.wraps(func)
     def wrapper(self: "CrudRepository", *args, **kwargs):
-        session: Session = kwargs.get('session') or self._create_session()
+        session: Session = kwargs.get("session") or self._create_session()
         try:
             result = func(self, *args, session=session, **kwargs)
             session.commit()
@@ -40,18 +43,17 @@ def session_auto_commit(func: FT) -> FT:
             raise error
         finally:
             session.close()
-    
-    return wrapper # type: ignore
 
+    return wrapper  # type: ignore
 
 
 class CrudRepository(RepositoryBase, Generic[ID, T]):
     """
     A CRUD (Create, Read, Update, Delete) repository implementation that provides common database operations for a single SQLModel entity.
-    
-    This repository is useful when you only need basic CRUD operations on a single database table. 
+
+    This repository is useful when you only need basic CRUD operations on a single database table.
     For more complex scenarios involving multiple tables, you should consider using the Unit of Work pattern provided by SQLModel.
-    
+
     The repository provides the following methods:
     - `find_by_id`: Retrieve a single entity by its ID.
     - `find_all_by_ids`: Retrieve a list of entities by their IDs.
@@ -63,9 +65,10 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
     - `delete_by_id`: Delete an entity by its ID.
     - `delete_all_by_ids`: Delete a list of entities by their IDs.
     - `upsert`: Perform an upsert operation (insert or update) on a single entity based on a set of query parameters.
-    
+
     The repository uses the SQLModel library for interacting with the database and automatically handles session management and transaction handling.
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.id_type, self.model_class = self._get_model_id_type_with_class()
@@ -73,7 +76,7 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
     @classmethod
     def _get_model_id_type_with_class(cls) -> tuple[Type[ID], Type[T]]:
         return get_args(tp=cls.__mro__[0].__orig_bases__[0])
-    
+
     def _find_by_statement(
         self,
         statement: Union[Select, SelectOfScalar],
@@ -82,7 +85,7 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
         session = session or self._create_session()
 
         return session, session.exec(statement).first()
-    
+
     def _find_by_query(
         self,
         query_by: dict[str, Any],
@@ -92,7 +95,7 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
 
         statement = select(self.model_class).filter_by(**query_by)
         return session, session.exec(statement).first()
-    
+
     def _find_all_by_query(
         self,
         query_by: dict[str, Any],
@@ -111,7 +114,6 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
         session = session or self._create_session()
 
         return session, list(session.exec(statement).fetchall())
-    
 
     def find_by_id(self, id: ID, session: Optional[Session] = None) -> Optional[T]:
         session = session or self._create_session()
@@ -119,7 +121,6 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
         statement = select(self.model_class).where(self.model_class.id == id)  # type: ignore
         return session.exec(statement).first()
 
-    
     def find_all_by_ids(
         self, ids: list[ID], session: Optional[Session] = None
     ) -> list[T]:
@@ -127,7 +128,6 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
         statement = select(self.model_class).where(self.model_class.id.in_(ids))  # type: ignore
         return list(session.exec(statement).all())
 
-    
     def find_all(self, session: Optional[Session] = None) -> list[T]:
         session = session or self._create_session()
 
@@ -182,16 +182,18 @@ class CrudRepository(RepositoryBase, Generic[ID, T]):
         self, ids: list[ID], session: Optional[Session] = None
     ) -> bool:
         session = session or self._create_session()
-        
+
         entities = self.find_all_by_ids(ids, session)
         for entity in entities:
             session.delete(entity)
         return True
-    
+
     @session_auto_commit
-    def upsert(self, entity: T, query_by: dict[str, Any],session: Optional[Session] = None) -> T:
+    def upsert(
+        self, entity: T, query_by: dict[str, Any], session: Optional[Session] = None
+    ) -> T:
         session = session or self._create_session()
-        
+
         statement = select(self.model_class).filter_by(**query_by)  # type: ignore
         _, existing_entity = self._find_by_statement(statement, session)
         if existing_entity is not None:

@@ -22,7 +22,9 @@ class _PropertiesLoader:
     ) -> None:
         self.properties_path = properties_path
         self.file_extension = self._get_file_extension(properties_path)
-        self.properties_file_content = self._read_properties_file_content(self.properties_path)
+        self.properties_file_content = self._read_properties_file_content(
+            self.properties_path
+        )
         self.properties_classes = properties_classes
         self.properties_class_map = self._load_classes_as_map()
 
@@ -31,14 +33,16 @@ class _PropertiesLoader:
             "yaml": yaml.load,
             "yml": yaml.load,
         }
-        
+
     def _get_file_extension(self, file_path: str) -> str:
         _id = "."
         if _id not in file_path:
-            raise ValueError(f"[UNABLE TO LOAD PROPERTIES] Invalid file path: {file_path}, no file extension found, please enter one of the following file extensions: {self.extension_loader_lookup.keys()}")
-        
+            raise ValueError(
+                f"[UNABLE TO LOAD PROPERTIES] Invalid file path: {file_path}, no file extension found, please enter one of the following file extensions: {self.extension_loader_lookup.keys()}"
+            )
+
         return file_path.split(_id)[-1]
-        
+
     def _read_properties_file_content(self, file_path: str) -> str:
         with open(file_path, "r") as file:
             return file.read()
@@ -46,8 +50,9 @@ class _PropertiesLoader:
     def _load_classes_as_map(self) -> dict[str, Type[Properties]]:
         return {_cls.get_key(): _cls for _cls in self.properties_classes}
 
-    def _load_properties_dict_from_file_content(self, file_extension: str,file_content: str) -> dict[str, dict]:
-       
+    def _load_properties_dict_from_file_content(
+        self, file_extension: str, file_content: str
+    ) -> dict[str, dict]:
         for extension, loader_func in self.extension_loader_lookup.items():
             if file_extension != extension:
                 continue
@@ -55,7 +60,9 @@ class _PropertiesLoader:
         raise ValueError(f"Unsupported file extension: {file_extension}")
 
     def load_properties(self) -> dict[str, Properties]:
-        properties_dict = self._load_properties_dict_from_file_content(self.file_extension, self.properties_file_content)
+        properties_dict = self._load_properties_dict_from_file_content(
+            self.file_extension, self.properties_file_content
+        )
         properties: dict[str, Properties] = {}
         for key, value in properties_dict.items():
             if key not in self.properties_class_map.keys():

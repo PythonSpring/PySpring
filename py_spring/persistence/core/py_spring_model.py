@@ -5,9 +5,6 @@ from sqlalchemy.engine.base import Connection
 from sqlmodel import Session, SQLModel
 
 
-
-
-
 class PySpringModel(SQLModel):
     """
     Represents a PySpring model, which is a subclass of SQLModel.
@@ -45,15 +42,15 @@ class PySpringModel(SQLModel):
             raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
 
         return cls._engine
-    
+
     @classmethod
     def get_connection(cls) -> Connection:
         if cls._connection is not None:
             return cls._connection
-        
+
         if cls._engine is None:
             raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
-        
+
         cls._connection = cls._engine.connect()
         return cls._connection
 
@@ -73,8 +70,7 @@ class PySpringModel(SQLModel):
     def create_session(cls) -> Session:
         engine = cls.get_engine()
         return Session(engine, expire_on_commit=False)
-    
-    
+
     @classmethod
     def create_managed_session(cls) -> Iterable[Session]:
         """
@@ -83,11 +79,8 @@ class PySpringModel(SQLModel):
             with PySpringModel.create_managed_session() as session:
                 Do something with the session
                 The session will be automatically closed when the context is exited
-        
+
         """
-                
+
         with cls.create_session() as session:
             yield session
-
-
-

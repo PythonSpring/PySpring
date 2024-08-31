@@ -10,10 +10,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
-from py_spring.core.util_classes.config_file_template_generator.config_file_template_generator import ConfigFileTemplateGenerator
+from py_spring.core.util_classes.config_file_template_generator.config_file_template_generator import (
+    ConfigFileTemplateGenerator,
+)
 import py_spring.core.utils as core_utils
 from py_spring.core.application.application_config import ApplicationConfigRepository
-from py_spring.core.application.context.application_context import AppEntities, ApplicationContext
+from py_spring.core.application.context.application_context import (
+    AppEntities,
+    ApplicationContext,
+)
 from py_spring.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
@@ -25,7 +30,6 @@ from py_spring.core.util_classes.class_scanner import ClassScanner
 from py_spring.core.util_classes.file_path_scanner import FilePathScanner
 from py_spring.modules.framework_module import FrameworkModule
 from py_spring.persistence.core.py_spring_model import PySpringModel
-
 
 
 class ApplicationFileGroups(BaseModel):
@@ -89,7 +93,9 @@ class PySpringApplication:
         self.app_context = ApplicationContext(config=self.app_context_config)
         self.fastapi = FastAPI()
 
-        self.classes_with_handlers: dict[Type[AppEntities], Callable[[Type[Any]], None]] = {
+        self.classes_with_handlers: dict[
+            Type[AppEntities], Callable[[Type[Any]], None]
+        ] = {
             Component: self._handle_register_component,
             RestController: self._handle_register_rest_controller,
             BeanCollection: self._handle_register_bean_collection,

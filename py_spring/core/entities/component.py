@@ -59,7 +59,7 @@ class Component:
     def set_scope(cls, scope: ComponentScope) -> None:
         cls.Config.scope = scope
 
-    def post_construct(self) -> None: 
+    def post_construct(self) -> None:
         """Hook method called after construction (i.e., __init__)"""
         pass
 
