@@ -1,4 +1,4 @@
-from typing import ClassVar, Generator, Optional
+from typing import ClassVar, Iterable, Optional
 
 from sqlalchemy import Engine, MetaData
 from sqlalchemy.engine.base import Connection
@@ -76,7 +76,7 @@ class PySpringModel(SQLModel):
     
     
     @classmethod
-    def create_managed_session(cls) -> Generator[Session]:
+    def create_managed_session(cls) -> Iterable[Session]:
         """
         Creates a managed session context that will automatically close the session when the context is exited.
         ## Example Syntax:
@@ -88,5 +88,6 @@ class PySpringModel(SQLModel):
                 
         with cls.create_session() as session:
             yield session
+
 
 
