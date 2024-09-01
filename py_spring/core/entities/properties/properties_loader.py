@@ -63,7 +63,7 @@ class _PropertiesLoader:
     
     @property
     def available_properties_keys(self) -> list[str]:
-        return list(self.properties_class_map.keys())
+        return list(map(str, self.properties_class_map.keys()))
 
     def load_properties(self) -> dict[str, Properties]:
         properties_dict = self._load_properties_dict_from_file_content(
