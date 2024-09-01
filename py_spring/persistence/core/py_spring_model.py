@@ -1,5 +1,6 @@
 from typing import ClassVar, Iterable, Optional
 
+from loguru import logger
 from sqlalchemy import Engine, MetaData
 from sqlalchemy.engine.base import Connection
 from sqlmodel import Session, SQLModel
@@ -45,12 +46,11 @@ class PySpringModel(SQLModel):
 
     @classmethod
     def get_connection(cls) -> Connection:
-        if cls._connection is not None:
+        if cls._connection is not None and not cls._connection.closed:
             return cls._connection
 
         if cls._engine is None:
             raise ValueError("[ENGINE NOT SET] SQL Engine is not set")
-
         cls._connection = cls._engine.connect()
         return cls._connection
 
