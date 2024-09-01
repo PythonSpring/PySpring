@@ -40,18 +40,21 @@ class ApplicationFileGroups(BaseModel):
 
 class PySpringApplication:
     """
-    The `Application` class is the main entry point for the application.
+    The PySpringApplication class is the main entry point for the PySpring application. 
     It is responsible for initializing the application, registering application entities, and running the FastAPI server.
 
-    The class performs the following tasks:
-    - Loads the application configuration from a JSON file.
-    - Creates a SQLAlchemy engine based on the configuration.
-    - Scans the application source directory for Python files and groups them into class files and model files.
-    - Scans the class files to find all classes that implement the `AppEntities` interface (Component, RestController, BeanCollection, Properties).
-    - Registers the found application entities with the `ApplicationContext`.
-    - Imports all model modules (table classes) and creates all SQLModel tables.
-    - Initializes the FastAPI application and registers all REST controllers.
-    - Runs the FastAPI server using Uvicorn.
+    The class performs the following key tasks:
+    - Initializes the application from a configuration file path
+    - Scans the application source directory for Python files and groups them into class files and model files
+    - Dynamically imports the model modules and creates SQLModel tables
+    - Registers application entities (components, controllers, bean collections, properties) with the application context
+    - Initializes the application context and injects dependencies
+    - Handles the lifecycle of singleton components
+    - Registers the controllers with the FastAPI application
+    - Enables any configured framework modules
+    - Runs the FastAPI server if the server configuration is enabled
+
+    The PySpringApplication class provides a high-level interface for bootstrapping and running the PySpring application.
     """
 
     PY_FILE_EXTENSION = ".py"

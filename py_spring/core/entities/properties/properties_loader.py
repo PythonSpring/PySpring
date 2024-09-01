@@ -6,6 +6,8 @@ import yaml
 from py_spring.core.entities.properties.properties import Properties
 
 
+class InvalidPropertiesKeyError(Exception): ...
+
 class _PropertiesLoader:
     """
     Provides a utility class `_PropertiesLoader` to load and validate properties from a file.
@@ -38,7 +40,7 @@ class _PropertiesLoader:
         _id = "."
         if _id not in file_path:
             raise ValueError(
-                f"[UNABLE TO LOAD PROPERTIES] Invalid file path: {file_path}, no file extension found, please enter one of the following file extensions: {self.extension_loader_lookup.keys()}"
+                f"[UNABLE TO LOAD PROPERTIES] Invalid file path: {file_path}, no file extension found"
             )
 
         return file_path.split(_id)[-1]
@@ -57,7 +59,11 @@ class _PropertiesLoader:
             if file_extension != extension:
                 continue
             return loader_func(file_content)
-        raise ValueError(f"Unsupported file extension: {file_extension}")
+        raise ValueError(f"[INVALID FILE EXTENSION] Unsupported file extension: {file_extension}")
+    
+    @property
+    def available_properties_keys(self) -> list[str]:
+        return list(self.properties_class_map.keys())
 
     def load_properties(self) -> dict[str, Properties]:
         properties_dict = self._load_properties_dict_from_file_content(
@@ -66,8 +72,8 @@ class _PropertiesLoader:
         properties: dict[str, Properties] = {}
         for key, value in properties_dict.items():
             if key not in self.properties_class_map.keys():
-                raise ValueError(
-                    f"[INVALID PROPERTIES KEY] Invalid properties key: {key}, please enter one of the following [{','.join(self.properties_class_map.keys())}]"
+                raise InvalidPropertiesKeyError(
+                    f"[INVALID PROPERTIES KEY] Invalid properties key: {key}, please enter one of the following [{','.join(self.available_properties_keys)}]"
                 )
             properties_cls = self.properties_class_map[key]
             properties[key] = properties_cls.model_validate(value)
