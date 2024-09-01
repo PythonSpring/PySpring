@@ -69,3 +69,10 @@ source-includes = [
     "requirements*.txt",
     "scripts/",
 ]
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.6.3",
+    "isort>=5.13.2",
+    "pytest>=8.3.2",
+    "pytest-mock>=3.14.0",
+]
