@@ -173,8 +173,14 @@ class PySpringApplication:
         return set(class_name_with_class_map.values())
 
     def _create_all_tables(self) -> None:
+        table_names = SQLModel.metadata.tables.keys()
+        if len(table_names) == 0:
+            logger.warning(
+                f"[SQLMODEL TABLE MODEL IMPORT] No tables found, skip creating tables."
+            )
+            return
         logger.success(
-            f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(SQLModel.metadata.tables.keys())}"
+            f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(table_names)}"
         )
         SQLModel.metadata.create_all(self.sql_engine)
         logger.success(
