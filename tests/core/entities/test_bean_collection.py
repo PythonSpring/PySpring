@@ -1,10 +1,10 @@
 import pytest
-from py_spring.core.entities.bean_collection import BeanView
+from py_spring.core.entities.bean_collection import BeanCollection, BeanView
 from py_spring.core.entities.component import Component
 
 
 
-class TestBeanCollection:
+class TestBeanView:
     class TestBean: ...
     
     @pytest.fixture
@@ -56,3 +56,17 @@ class TestBeanCollection:
         # Revert attributes to valid state
         updated_bean.__class__.__name__ = "UpdatedComponent"
         assert bean_view.is_valid_bean()
+        
+class TestBeanCollection:
+    def test_scan_beans_identifies_all_beans(self):
+        class TestClass(BeanCollection):
+            @classmethod
+            def create_bean_a(cls) -> Component:
+                return Component()
+            
+            @classmethod
+            def create_bean_b(cls) -> Component:
+                return Component()
+            
+        beans = TestClass.scan_beans()
+        assert len(beans) == 2
