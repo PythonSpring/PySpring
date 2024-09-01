@@ -17,7 +17,7 @@ class BeanView(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    bean_creation_func: Callable[..., Component] = Field(exclude=True)
+    bean_creation_func: Callable[..., object] = Field(exclude=True)
     bean_name: str
     bean: object
 
