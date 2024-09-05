@@ -3,8 +3,6 @@ from typing import Callable
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 
-from py_spring.core.entities.component import Component
-from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
 
 
 class BeanView(BaseModel):
