@@ -1,4 +1,5 @@
-from typing import ClassVar, Iterable, Optional
+import contextlib
+from typing import ClassVar, Iterator, Optional
 
 from loguru import logger
 from sqlalchemy import Engine, MetaData
@@ -72,15 +73,25 @@ class PySpringModel(SQLModel):
         return Session(engine, expire_on_commit=False)
 
     @classmethod
-    def create_managed_session(cls) -> Iterable[Session]:
+    @contextlib.contextmanager
+    def create_managed_session(cls) -> Iterator[Session]:
         """
         Creates a managed session context that will automatically close the session when the context is exited.
         ## Example Syntax:
             with PySpringModel.create_managed_session() as session:
                 Do something with the session
                 The session will be automatically closed when the context is exited
-
         """
-
-        with cls.create_session() as session:
+        try:
+            session = cls.create_session()
             yield session
+            logger.info("[MANAGED SESSION COMMIT] Session committing...")
+            session.commit()
+            logger.success("[MANAGED SESSION COMMIT] Session committed.")
+        except Exception as error:
+            logger.exception(error)
+            session.rollback()
+        finally:
+            session.close()
+        
+            
