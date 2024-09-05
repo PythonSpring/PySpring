@@ -32,8 +32,8 @@ class _PropertiesLoader:
 
         self.extension_loader_lookup = {
             "json": json.loads,
-            "yaml": yaml.load,
-            "yml": yaml.load,
+            "yaml": yaml.safe_load,
+            "yml": yaml.safe_load,
         }
 
     def _get_file_extension(self, file_path: str) -> str:
