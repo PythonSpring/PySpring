@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
-from py_spring.core.util_classes.config_file_template_generator.config_file_template_generator import (
+from py_spring.commons.config_file_template_generator.config_file_template_generator import (
     ConfigFileTemplateGenerator,
 )
 import py_spring.core.utils as core_utils
@@ -26,8 +26,8 @@ from py_spring.core.entities.bean_collection import BeanCollection
 from py_spring.core.entities.component import Component, ComponentLifeCycle
 from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
-from py_spring.core.util_classes.class_scanner import ClassScanner
-from py_spring.core.util_classes.file_path_scanner import FilePathScanner
+from py_spring.commons.class_scanner import ClassScanner
+from py_spring.commons.file_path_scanner import FilePathScanner
 from py_spring.modules.framework_module import FrameworkModule
 from py_spring.persistence.core.py_spring_model import PySpringModel
 
