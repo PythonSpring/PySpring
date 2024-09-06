@@ -61,9 +61,9 @@ class PySpringApplication:
 
     def __init__(
         self,
-        app_config_path: str = "./app-config.json",
         module_classes: Iterable[Type[FrameworkModule]] = list(),
     ) -> None:
+        app_config_path: str = "./app-config.json"
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
         )
