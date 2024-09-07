@@ -28,7 +28,6 @@ from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
 from py_spring.commons.class_scanner import ClassScanner
 from py_spring.commons.file_path_scanner import FilePathScanner
-from py_spring.modules.framework_module import FrameworkModule
 from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
@@ -59,10 +58,7 @@ class PySpringApplication:
 
     PY_FILE_EXTENSION = ".py"
 
-    def __init__(
-        self,
-        module_classes: Iterable[Type[FrameworkModule]] = list(),
-    ) -> None:
+    def __init__(self) -> None:
         app_config_path: str = "./app-config.json"
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
@@ -72,7 +68,6 @@ class PySpringApplication:
         self._template_generator.generate_app_config_file_template_if_not_exists()
         self._template_generator.generate_app_properties_file_template_if_not_exists()
 
-        self.module_classes = module_classes
         self._model_classes: set[type[object]] = set()
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
@@ -80,7 +75,10 @@ class PySpringApplication:
             url=self.app_config.sqlalchemy_database_uri, echo=True
         )
         self.file_path_scanner = FilePathScanner(
-            target_dir=self.app_config.app_src_target_dir,
+            target_dirs=[
+                self.app_config.app_src_target_dir, 
+                self.app_config.module_src_target_dir
+            ],
             target_extensions=[self.PY_FILE_EXTENSION],
         )
         self.target_dir_absolute_file_paths = (
@@ -261,19 +259,10 @@ class PySpringApplication:
             port=self.app_config.server_config.port,
         )
 
-    def __enable_modules(self) -> None:
-        for module_cls in self.module_classes:
-            module = module_cls(self.fastapi)
-            logger.info(f"[MODULE ENABLED] Enable module: {module_cls.__name__}")
-            for router in module.get_api_routers():
-                self.fastapi.include_router(router)
-            module.enabled()
-
     def run(self) -> None:
         try:
             self.__init_app()
             self.__init_controllers()
-            self.__enable_modules()
             if self.app_config.server_config.enabled:
                 self.__run_server()
         finally:

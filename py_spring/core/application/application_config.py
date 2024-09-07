@@ -35,6 +35,7 @@ class ApplicationConfig(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
     app_src_target_dir: str
+    module_src_target_dir: str
     server_config: ServerConfig
     sqlalchemy_database_uri: str = Field(default="sqlite:///:memory:")
     properties_file_path: str

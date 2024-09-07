@@ -14,18 +14,18 @@ class FilePathScanner:
         set[str]: A set of the full file paths for all files found with the target extensions.
     """
 
-    def __init__(self, target_dir: str, target_extensions: Iterable[str]) -> None:
-        self.target_dir = target_dir
+    def __init__(self, target_dirs: Iterable[str], target_extensions: Iterable[str]) -> None:
+        self.target_dirs = target_dirs
         self.target_extensions = target_extensions
 
     def scan_file_paths_under_directory(self) -> set[str]:
         paths: set[str] = set()
-        for root, _, files in os.walk(self.target_dir):
-            for file in files:
-                for extension in self.target_extensions:
-                    if file.endswith(extension):
-                        file_path: str = os.path.join(root, file)
-                        paths.add(file_path)
-                        break
-
+        for _dir in self.target_dirs:
+            for root, _, files in os.walk(_dir):
+                for file in files:
+                    for extension in self.target_extensions:
+                        if file.endswith(extension):
+                            file_path: str = os.path.join(root, file)
+                            paths.add(file_path)
+                            break
         return paths
