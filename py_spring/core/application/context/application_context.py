@@ -1,5 +1,5 @@
 from inspect import isclass
-from typing import Callable, Mapping, Optional, Type, TypeVar
+from typing import Callable, Mapping, Optional, Type, TypeVar, cast
 
 from loguru import logger
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ AppEntities = Component | RestController | BeanCollection | Properties
 
 
 T = TypeVar("T", bound=AppEntities)
-
+PT = TypeVar("PT", bound=Properties)
 
 class ComponentNotFoundError(Exception): ...
 
@@ -100,13 +100,13 @@ class ApplicationContext:
         optional_instance = self.singleton_bean_instance_container.get(bean_name)
         return optional_instance  # type: ignore
 
-    def get_properties(self, properties_cls: Type[Properties]) -> Optional[Properties]:
+    def get_properties(self, properties_cls: Type[PT]) -> Optional[PT]:
         properties_cls_name = properties_cls.get_key()
         if properties_cls_name not in self.properties_cls_container:
             return
-        optional_instance = self.singleton_properties_instance_container.get(
+        optional_instance = cast(PT, self.singleton_properties_instance_container.get(
             properties_cls_name
-        )
+        ))
         return optional_instance
 
     def register_component(self, component_cls: Type[Component]) -> None:
@@ -157,6 +157,9 @@ class ApplicationContext:
         properties_loader = self._create_properties_loader()
         properties_instance_dict = properties_loader.load_properties()
         for properties_key, properties_cls in self.properties_cls_container.items():
+            if properties_key in self.singleton_properties_instance_container:
+                continue
+            
             logger.debug(
                 f"[INITIALIZING SINGLETON PROPERTIES] Init singleton properties: {properties_key}"
             )
