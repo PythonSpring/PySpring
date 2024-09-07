@@ -1,3 +1,6 @@
 [submodule "modules"]
 	path = modules
 	url = git@github.com:NFUChen/PySpring-Modules.git
+[submodule "cli"]
+	path = cli
+	url = git@github.com:NFUChen/PySpring-CLI.git
