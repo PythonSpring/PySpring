@@ -89,9 +89,12 @@ class PySpringModel(SQLModel):
             session.commit()
             logger.success("[MANAGED SESSION COMMIT] Session committed.")
         except Exception as error:
-            logger.exception(error)
+            logger.error(error)
+            logger.error("[MANAGED SESSION ROLLBACK] Session rolling back...")
             session.rollback()
+            raise
         finally:
+            logger.info("[MANAGED SESSION CLOSE] Session closing...")
             session.close()
         
             
