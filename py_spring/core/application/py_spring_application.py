@@ -10,10 +10,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
+import py_spring.core.utils as core_utils
+from py_spring.commons.class_scanner import ClassScanner
 from py_spring.commons.config_file_template_generator.config_file_template_generator import (
     ConfigFileTemplateGenerator,
 )
-import py_spring.core.utils as core_utils
+from py_spring.commons.file_path_scanner import FilePathScanner
 from py_spring.core.application.application_config import ApplicationConfigRepository
 from py_spring.core.application.context.application_context import (
     AppEntities,
@@ -26,8 +28,6 @@ from py_spring.core.entities.bean_collection import BeanCollection
 from py_spring.core.entities.component import Component, ComponentLifeCycle
 from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
-from py_spring.commons.class_scanner import ClassScanner
-from py_spring.commons.file_path_scanner import FilePathScanner
 from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
@@ -39,7 +39,7 @@ class ApplicationFileGroups(BaseModel):
 
 class PySpringApplication:
     """
-    The PySpringApplication class is the main entry point for the PySpring application. 
+    The PySpringApplication class is the main entry point for the PySpring application.
     It is responsible for initializing the application, registering application entities, and running the FastAPI server.
 
     The class performs the following key tasks:
@@ -76,8 +76,8 @@ class PySpringApplication:
         )
         self.file_path_scanner = FilePathScanner(
             target_dirs=[
-                self.app_config.app_src_target_dir, 
-                *self.app_config.module_src_target_dirs
+                self.app_config.app_src_target_dir,
+                *self.app_config.module_src_target_dirs,
             ],
             target_extensions=[self.PY_FILE_EXTENSION],
         )

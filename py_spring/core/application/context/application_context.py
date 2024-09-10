@@ -17,12 +17,12 @@ from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
 from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
 
-
 AppEntities = Component | RestController | BeanCollection | Properties
 
 
 T = TypeVar("T", bound=AppEntities)
 PT = TypeVar("PT", bound=Properties)
+
 
 class ComponentNotFoundError(Exception): ...
 
@@ -104,9 +104,9 @@ class ApplicationContext:
         properties_cls_name = properties_cls.get_key()
         if properties_cls_name not in self.properties_cls_container:
             return
-        optional_instance = cast(PT, self.singleton_properties_instance_container.get(
-            properties_cls_name
-        ))
+        optional_instance = cast(
+            PT, self.singleton_properties_instance_container.get(properties_cls_name)
+        )
         return optional_instance
 
     def register_component(self, component_cls: Type[Component]) -> None:
@@ -159,7 +159,7 @@ class ApplicationContext:
         for properties_key, properties_cls in self.properties_cls_container.items():
             if properties_key in self.singleton_properties_instance_container:
                 continue
-            
+
             logger.debug(
                 f"[INITIALIZING SINGLETON PROPERTIES] Init singleton properties: {properties_key}"
             )

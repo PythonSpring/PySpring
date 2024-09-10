@@ -1,7 +1,9 @@
 import os
 from typing import ClassVar
+
 from loguru import logger
 from pydantic import BaseModel
+
 from py_spring.core.application.application_config import ApplicationConfigRepository
 from py_spring.persistence.repositories.json_config_repository import (
     JsonConfigRepository,

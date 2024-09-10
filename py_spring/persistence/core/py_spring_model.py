@@ -96,5 +96,3 @@ class PySpringModel(SQLModel):
         finally:
             logger.info("[MANAGED SESSION CLOSE] Session closing...")
             session.close()
-        
-            

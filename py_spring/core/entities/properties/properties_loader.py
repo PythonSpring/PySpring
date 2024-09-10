@@ -9,6 +9,7 @@ from py_spring.core.entities.properties.properties import Properties
 
 class InvalidPropertiesKeyError(Exception): ...
 
+
 class _PropertiesLoader:
     """
     Provides a utility class `_PropertiesLoader` to load and validate properties from a file.
@@ -52,6 +53,7 @@ class _PropertiesLoader:
 
     def _load_classes_as_map(self) -> dict[str, Type[Properties]]:
         return {_cls.get_key(): _cls for _cls in self.properties_classes}
+
     @cachetools.cached(cache={})
     def _load_properties_dict_from_file_content(
         self, file_extension: str, file_content: str
@@ -60,8 +62,10 @@ class _PropertiesLoader:
             if file_extension != extension:
                 continue
             return loader_func(file_content)
-        raise ValueError(f"[INVALID FILE EXTENSION] Unsupported file extension: {file_extension}")
-    
+        raise ValueError(
+            f"[INVALID FILE EXTENSION] Unsupported file extension: {file_extension}"
+        )
+
     @property
     def available_properties_keys(self) -> list[str]:
         return list(map(str, self.properties_class_map.keys()))

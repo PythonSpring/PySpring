@@ -4,7 +4,6 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 
 
-
 class BeanView(BaseModel):
     """
     The `BeanView` class represents a single bean within a `BeanCollection`.
@@ -80,7 +79,7 @@ class BeanCollection:
             bean_views.append(view)
 
         return bean_views
-    
+
     @classmethod
     def get_name(cls) -> str:
         return cls.__name__
