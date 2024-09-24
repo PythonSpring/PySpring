@@ -5,3 +5,4 @@ from .core.entities.controllers.rest_controller import RestController
 from .core.entities.properties.properties import Properties
 from .persistence.core.py_spring_model import PySpringModel
 from .persistence.repositories.crud_repository import CrudRepository
+from .core.entities.entity_provider import EntityProvider

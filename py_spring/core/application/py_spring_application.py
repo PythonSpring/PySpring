@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
+from py_spring.core.entities.entity_provider import EntityProvider
 import py_spring.core.utils as core_utils
 from py_spring.commons.class_scanner import ClassScanner
 from py_spring.commons.config_file_template_generator.config_file_template_generator import (
@@ -58,7 +59,8 @@ class PySpringApplication:
 
     PY_FILE_EXTENSION = ".py"
 
-    def __init__(self, app_config_path: str) -> None:
+    def __init__(self, app_config_path: str, entity_providers: Iterable[EntityProvider] = list()) -> None:
+        self.entity_providers = entity_providers
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
         )
@@ -128,6 +130,9 @@ class PySpringApplication:
 
         try:
             self._model_classes = import_func_wrapper()
+            for provider in self.entity_providers:
+                _models = provider.get_models()
+                self._model_classes.update(_models)
         except SqlAlehemyInvalidRequestError as error:
             logger.warning(
                 f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes."
@@ -189,8 +194,13 @@ class PySpringApplication:
         self.app_class_scanner.scan_classes_for_file_paths()
         self.scanned_classes = self.app_class_scanner.get_classes()
 
-    def _register_app_entities(self) -> None:
-        for _cls in self.scanned_classes:
+    def _register_all_entities_from_providers(self) -> None:
+        for provider in self.entity_providers:
+            entities = provider.get_entities()
+            self._register_app_entities(entities)
+
+    def _register_app_entities(self, classes: Iterable[Type[object]]) -> None:
+        for _cls in classes:
             for _target_cls, handler in self.classes_with_handlers.items():
                 if not issubclass(_cls, _target_cls):
                     continue
@@ -225,7 +235,8 @@ class PySpringApplication:
         self._scan_classes_for_project()
         self._import_model_modules()
         self._create_all_tables()
-        self._register_app_entities()
+        self._register_all_entities_from_providers()
+        self._register_app_entities(self.scanned_classes)
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
