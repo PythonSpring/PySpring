@@ -77,8 +77,7 @@ class PySpringApplication:
         )
         self.file_path_scanner = FilePathScanner(
             target_dirs=[
-                self.app_config.app_src_target_dir,
-                *self.app_config.module_src_target_dirs,
+                self.app_config.app_src_target_dir
             ],
             target_extensions=[self.PY_FILE_EXTENSION],
         )

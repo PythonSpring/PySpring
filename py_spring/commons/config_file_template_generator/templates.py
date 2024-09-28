@@ -1,6 +1,5 @@
 app_config_template = {
     "app_src_target_dir": "./src",
-    "module_src_target_dirs": ["./modules"],
     "server_config": {
         "host": "0.0.0.0",
         "port": 8080
