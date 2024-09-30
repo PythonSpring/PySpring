@@ -1,18 +1,14 @@
-import inspect
 import os
-from typing import Any, Callable, Iterable, Type, cast
+from typing import Any, Callable, Iterable, Type
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import create_engine
-from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
-from sqlmodel import SQLModel
 
 from py_spring.core.application.commons import AppEntities
 from py_spring.core.entities.entity_provider import EntityProvider
-import py_spring.core.utils as core_utils
 from py_spring.commons.class_scanner import ClassScanner
 from py_spring.commons.config_file_template_generator.config_file_template_generator import (
     ConfigFileTemplateGenerator,
@@ -29,7 +25,6 @@ from py_spring.core.entities.bean_collection import BeanCollection
 from py_spring.core.entities.component import Component, ComponentLifeCycle
 from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
-from py_spring.persistence.core.py_spring_model import PySpringModel
 
 
 
@@ -86,10 +81,7 @@ class PySpringApplication:
         self.target_dir_absolute_file_paths = (
             self.file_path_scanner.scan_file_paths_under_directory()
         )
-        self.app_file_groups = self._group_file_paths(
-            self.target_dir_absolute_file_paths
-        )
-        self.app_class_scanner = ClassScanner(self.app_file_groups.class_files)
+        self.app_class_scanner = ClassScanner(self.target_dir_absolute_file_paths)
         self.app_context_config = ApplicationContextConfig(
             properties_path=self.app_config.properties_file_path
         )
@@ -104,92 +96,6 @@ class PySpringApplication:
             BeanCollection: self._handle_register_bean_collection,
             Properties: self._handle_register_properties,
         }
-
-    def _group_file_paths(self, files: Iterable[str]) -> ApplicationFileGroups:
-        class_files: set[str] = set()
-        model_files: set[str] = set()
-
-        for file in files:
-            py_file_name = self._get_file_base_name(file)
-            if py_file_name in self.app_config.model_file_postfix_patterns:
-                model_files.add(file)
-            if file not in model_files:
-                class_files.add(file)
-        return ApplicationFileGroups(class_files=class_files, model_files=model_files)
-
-    def _import_model_modules(self) -> None:
-        logger.info(
-            f"[SQLMODEL TABLE MODEL IMPORT] Import all models: {self.app_file_groups.model_files}"
-        )
-
-        def import_func_wrapper() -> set[type[object]]:
-            return core_utils.dynamically_import_modules(
-                self.app_file_groups.model_files,
-                is_ignore_error=False,
-                target_subclasses=[PySpringModel, SQLModel],
-            )
-
-        try:
-            self._model_classes = import_func_wrapper()
-            for provider in self.entity_providers:
-                _models = provider.get_models()
-                self._model_classes.update(_models)
-        except SqlAlehemyInvalidRequestError as error:
-            logger.warning(
-                f"[ERROR ADVISE] Encounter {error.__class__.__name__} when importing model classes."
-            )
-            logger.error(
-                f"[SQLMODEL TABLE MODEL IMPORT FAILED] Failed to import model modules: {error}"
-            )
-            self._model_classes = self._get_pyspring_model_inheritors()
-
-    def _is_from_model_file(self, cls: Type[object]) -> bool:
-        try:
-            source_file_name = inspect.getsourcefile(cls)
-        except TypeError as error:
-            logger.warning(
-                f"[CHECK MODEL FILE] Failed to get source file name for class: {cls.__name__}, largely due to built-in classes.\n Actual error: {error}"
-            )
-            return False
-        if source_file_name is None:
-            return False
-        py_file_name = self._get_file_base_name(source_file_name)  # e.g., models.py
-        return py_file_name in self.app_config.model_file_postfix_patterns
-
-    def _get_file_base_name(self, file_path: str) -> str:
-        return file_path.split("/")[-1]
-
-    def _get_pyspring_model_inheritors(self) -> set[Type[object]]:
-        # use dict to store all models, use a session to check if all models are mapped
-        class_name_with_class_map: dict[str, Type[object]] = {}
-        for _cls in set(PySpringModel.__subclasses__()):
-            if _cls.__name__ in class_name_with_class_map:
-                continue
-            if not self._is_from_model_file(_cls):
-                logger.warning(
-                    f"[SQLMODEL TABLE MODEL IMPORT] {_cls.__name__} is not from model file, skip it."
-                )
-                continue
-
-            class_name_with_class_map[_cls.__name__] = _cls
-
-        return set(class_name_with_class_map.values())
-
-    def _create_all_tables(self) -> None:
-        table_names = SQLModel.metadata.tables.keys()
-        logger.success(
-            f"[SQLMODEL TABLE CREATION] Create all SQLModel tables, engine url: {self.sql_engine.url}, tables: {', '.join(table_names)}"
-        )
-        SQLModel.metadata.create_all(self.sql_engine)
-        logger.success(
-            f"[SQLMODEL TABLE MODEL IMPORT] Get model classes from PySpringModel inheritors: {', '.join([_cls.__name__ for _cls in self._model_classes])}"
-        )
-
-        PySpringModel.set_engine(self.sql_engine)
-        PySpringModel.set_models(
-            cast(list[Type[PySpringModel]], list(self._model_classes))
-        )
-        PySpringModel.set_metadata(SQLModel.metadata)
 
     def _scan_classes_for_project(self) -> None:
         self.app_class_scanner.scan_classes_for_file_paths()
@@ -210,6 +116,8 @@ class PySpringApplication:
     def _register_entity_providers(self, entity_providers: Iterable[EntityProvider]) -> None:
         for provider in entity_providers:
             self.app_context.register_entity_provider(provider)
+            provider.set_context(self.app_context)
+            provider.provider_init()
 
     def _handle_register_component(self, _cls: Type[Component]) -> None:
         self.app_context.register_component(_cls)
@@ -238,8 +146,6 @@ class PySpringApplication:
 
     def __init_app(self) -> None:
         self._scan_classes_for_project()
-        self._import_model_modules()
-        self._create_all_tables()
         self._register_all_entities_from_providers()
         self._register_app_entities(self.scanned_classes)
         self.app_context.load_properties()

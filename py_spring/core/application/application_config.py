@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from py_spring.persistence.repositories.json_config_repository import (
+from py_spring.commons.json_config_repository import (
     JsonConfigRepository,
 )
 
@@ -36,9 +36,7 @@ class ApplicationConfig(BaseModel):
 
     app_src_target_dir: str
     server_config: ServerConfig
-    sqlalchemy_database_uri: str = Field(default="sqlite:///:memory:")
     properties_file_path: str
-    model_file_postfix_patterns: list[str] = Field(default=["models.py"])
 
 
 class ApplicationConfigRepository(JsonConfigRepository[ApplicationConfig]):
