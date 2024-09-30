@@ -4,6 +4,7 @@ from typing import Callable, Mapping, Optional, Type, TypeVar, cast
 from loguru import logger
 from pydantic import BaseModel
 
+from py_spring.core.application.commons import AppEntities
 from py_spring.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
@@ -14,10 +15,10 @@ from py_spring.core.entities.bean_collection import (
 )
 from py_spring.core.entities.component import Component, ComponentScope
 from py_spring.core.entities.controllers.rest_controller import RestController
+from py_spring.core.entities.entity_provider import EntityProvider
 from py_spring.core.entities.properties.properties import Properties
 from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
 
-AppEntities = Component | RestController | BeanCollection | Properties
 
 
 T = TypeVar("T", bound=AppEntities)
@@ -25,7 +26,7 @@ PT = TypeVar("PT", bound=Properties)
 
 
 class ComponentNotFoundError(Exception): ...
-
+class InvalidDependencyError(Exception): ...
 
 class ApplicationContextView(BaseModel):
     config: ApplicationContextConfig
@@ -57,6 +58,7 @@ class ApplicationContext:
 
         self.properties_cls_container: dict[str, Type[Properties]] = {}
         self.singleton_properties_instance_container: dict[str, Properties] = {}
+        self.providers: list[EntityProvider] = []
 
     def _create_properties_loader(self) -> _PropertiesLoader:
         return _PropertiesLoader(
@@ -91,6 +93,16 @@ class ApplicationContext:
             case ComponentScope.Prototype:
                 prototype_instance = component_cls()
                 return prototype_instance
+            
+    def is_within_context(self, _cls: Type[AppEntities]) -> bool:
+        cls_name = _cls.__name__
+        is_within_component = cls_name in self.component_cls_container
+        is_within_controller = cls_name in self.controller_cls_container
+        is_within_bean_collection = cls_name in self.bean_collection_cls_container
+        is_within_properties = cls_name in self.properties_cls_container
+        return is_within_component or is_within_controller or is_within_bean_collection or is_within_properties
+
+        
 
     def get_bean(self, object_cls: Type[T]) -> Optional[T]:
         bean_name = object_cls.__name__
@@ -135,6 +147,9 @@ class ApplicationContext:
 
         bean_name = bean_cls.get_name()
         self.bean_collection_cls_container[bean_name] = bean_cls
+
+    def register_entity_provider(self, provider: EntityProvider) -> None:
+        self.providers.append(provider)
 
     def register_properties(self, properties_cls: Type[Properties]) -> None:
         if not issubclass(properties_cls, Properties):
@@ -273,3 +288,18 @@ class ApplicationContext:
         for container in containers:
             for _cls_name, _cls in container.items():
                 self._inject_entity_dependencies(_cls)
+
+    def _validate_entity_provider_dependencies(self, provider: EntityProvider) -> None:
+        for dependency in provider.depends_on:
+            if not issubclass(dependency, AppEntities):
+                error = f"[INVALID DEPENDENCY] Invalid dependency {dependency.__name__} in {provider.__class__.__name__}"
+                logger.error(error)
+                raise InvalidDependencyError(error)
+            if not self.is_within_context(dependency):
+                error = f"[INVALID DEPENDENCY] Dependency {dependency.__name__} not found in the application context"
+                logger.error(error)
+                raise InvalidDependencyError(error)
+            
+    def validate_entity_providers(self) -> None:
+        for provider in self.providers:
+            self._validate_entity_provider_dependencies(provider)

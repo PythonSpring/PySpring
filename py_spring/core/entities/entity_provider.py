@@ -2,6 +2,7 @@
 from dataclasses import field, dataclass
 from typing import Type
 
+from py_spring.core.application.commons import AppEntities
 from py_spring.core.entities.bean_collection import BeanCollection
 from py_spring.core.entities.component import Component
 from py_spring.core.entities.controllers.rest_controller import RestController
@@ -17,6 +18,7 @@ class EntityProvider:
     rest_controller_classes: list[Type[RestController]] = field(default_factory= list)
     model_classes: list[Type[PySpringModel]] = field(default_factory= list)
 
+    depends_on: list[Type[AppEntities]] = field(default_factory= list)
 
     def get_entities(self) -> list[Type[object]]:
         return [*self.component_classes, 

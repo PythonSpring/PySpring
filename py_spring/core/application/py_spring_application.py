@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError as SqlAlehemyInvalidRequestError
 from sqlmodel import SQLModel
 
+from py_spring.core.application.commons import AppEntities
 from py_spring.core.entities.entity_provider import EntityProvider
 import py_spring.core.utils as core_utils
 from py_spring.commons.class_scanner import ClassScanner
@@ -19,7 +20,6 @@ from py_spring.commons.config_file_template_generator.config_file_template_gener
 from py_spring.commons.file_path_scanner import FilePathScanner
 from py_spring.core.application.application_config import ApplicationConfigRepository
 from py_spring.core.application.context.application_context import (
-    AppEntities,
     ApplicationContext,
 )
 from py_spring.core.application.context.application_context_config import (
@@ -30,6 +30,8 @@ from py_spring.core.entities.component import Component, ComponentLifeCycle
 from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
 from py_spring.persistence.core.py_spring_model import PySpringModel
+
+
 
 
 class ApplicationFileGroups(BaseModel):
@@ -205,6 +207,10 @@ class PySpringApplication:
                     continue
                 handler(_cls)
 
+    def _register_entity_providers(self, entity_providers: Iterable[EntityProvider]) -> None:
+        for provider in entity_providers:
+            self.app_context.register_entity_provider(provider)
+
     def _handle_register_component(self, _cls: Type[Component]) -> None:
         self.app_context.register_component(_cls)
 
@@ -239,8 +245,12 @@ class PySpringApplication:
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
+        self._register_entity_providers(self.entity_providers)
+        self.app_context.validate_entity_providers()
         # after injecting all deps, lifecycle (init) can be called
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
+    
+    
 
     def _handle_singleton_components_life_cycle(
         self, life_cycle: ComponentLifeCycle
