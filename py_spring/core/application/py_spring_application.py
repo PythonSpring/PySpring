@@ -5,7 +5,6 @@ import uvicorn
 from fastapi import APIRouter, FastAPI
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import create_engine
 
 from py_spring.core.application.commons import AppEntities
 from py_spring.core.entities.entity_provider import EntityProvider
@@ -69,9 +68,6 @@ class PySpringApplication:
         self._model_classes: set[type[object]] = set()
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
-        self.sql_engine = create_engine(
-            url=self.app_config.sqlalchemy_database_uri, echo=True
-        )
         self.file_path_scanner = FilePathScanner(
             target_dirs=[
                 self.app_config.app_src_target_dir
