@@ -24,7 +24,7 @@ To get started with **PySpring**, follow these steps:
 
 ### 1. Install the **PySpring** framework by running:
 
-`pip3 install git+https://github.com/NFUChen/PySpring.git`
+`pip3 install git+https://github.com/PythonSpring/pyspring-core.git`
 
 
 ### 2. Create a new Python project and navigate to its directory
