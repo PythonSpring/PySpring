@@ -147,6 +147,7 @@ class PySpringApplication:
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
+        self.app_context.set_all_file_paths(self.target_dir_absolute_file_paths)
         self._register_entity_providers(self.entity_providers)
         self.app_context.validate_entity_providers()
         # after injecting all deps, lifecycle (init) can be called

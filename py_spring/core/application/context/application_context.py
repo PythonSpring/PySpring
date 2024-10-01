@@ -46,7 +46,7 @@ class ApplicationContext:
     """
 
     def __init__(self, config: ApplicationContextConfig) -> None:
-        self.all_file_paths: list[str] = []
+        self.all_file_paths: set[str] = set()
         self.primitive_types = (bool, str, int, float, type(None))
 
         self.config = config
@@ -61,7 +61,7 @@ class ApplicationContext:
         self.singleton_properties_instance_container: dict[str, Properties] = {}
         self.providers: list[EntityProvider] = []
 
-    def set_all_file_paths(self, all_file_paths: list[str]) -> None:
+    def set_all_file_paths(self, all_file_paths: set[str]) -> None:
         self.all_file_paths = all_file_paths
 
     def _create_properties_loader(self) -> _PropertiesLoader:
