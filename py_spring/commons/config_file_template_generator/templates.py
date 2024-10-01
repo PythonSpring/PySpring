@@ -5,7 +5,11 @@ app_config_template = {
         "port": 8080,
         "enabled": True
     },
-    "properties_file_path": "./application-properties.json"
+    "properties_file_path": "./application-properties.json",
+    "loguru_config": {
+        "log_file_path": "./logs/app.log",
+        "log_level": "DEBUG"
+    }
 }
 
 app_properties_template = {}

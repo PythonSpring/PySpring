@@ -93,6 +93,20 @@ class PySpringApplication:
             Properties: self._handle_register_properties,
         }
 
+    def __configure_logging(self):
+        """Applies the logging configuration using Loguru."""
+        config = self.app_config.loguru_config
+        if not config.log_file_path:
+            return
+        
+        logger.add(
+            config.log_file_path,
+            format=config.log_format,
+            level=config.log_level,
+            rotation=config.log_rotation,
+            retention=config.log_retention
+        )
+
     def _scan_classes_for_project(self) -> None:
         self.app_class_scanner.scan_classes_for_file_paths()
         self.scanned_classes = self.app_class_scanner.get_classes()
@@ -183,6 +197,7 @@ class PySpringApplication:
 
     def run(self) -> None:
         try:
+            self.__configure_logging()
             self.__init_app()
             self.__init_controllers()
             if self.app_config.server_config.enabled:

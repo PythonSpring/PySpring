@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from py_spring.commons.json_config_repository import (
     JsonConfigRepository,
 )
+from py_spring.core.application.loguru_config import LoguruConfig
 
 
 class ServerConfig(BaseModel):
@@ -37,6 +38,7 @@ class ApplicationConfig(BaseModel):
     app_src_target_dir: str
     server_config: ServerConfig
     properties_file_path: str
+    loguru_config: LoguruConfig
 
 
 class ApplicationConfigRepository(JsonConfigRepository[ApplicationConfig]):
