@@ -5,7 +5,10 @@ from typing import ClassVar, Optional, Type
 from loguru import logger
 from pydantic import BaseModel
 
-from py_spring.commons.config_file_template_generator.templates import app_config_template, app_properties_template
+from py_spring.commons.config_file_template_generator.templates import (
+    app_config_template,
+    app_properties_template,
+)
 from py_spring.core.application.application_config import ApplicationConfig
 
 
@@ -24,22 +27,29 @@ class ConfigFileTemplateGenerator:
     def __init__(self, target_file_dir: str) -> None:
         self.target_file_dir = target_file_dir
 
-    def _is_valid_template(self, template: dict, validator_cls: Type[BaseModel]) -> bool:
+    def _is_valid_template(
+        self, template: dict, validator_cls: Type[BaseModel]
+    ) -> bool:
         try:
             validator_cls.model_validate(template)
             return True
         except Exception as e:
             return False
 
-    def _save_template(self, target_file: str, template: dict, validator_cls: Optional[Type[BaseModel]] = None) -> None:
+    def _save_template(
+        self,
+        target_file: str,
+        template: dict,
+        validator_cls: Optional[Type[BaseModel]] = None,
+    ) -> None:
         with open(target_file, "w") as file:
             if validator_cls is None:
-                file.write(json.dumps(template, indent=4))            
+                file.write(json.dumps(template, indent=4))
             else:
                 is_valid = self._is_valid_template(template, validator_cls)
                 if is_valid:
                     template_instance = validator_cls.model_validate(template)
-                    file.write(template_instance.model_dump_json(indent= 4))
+                    file.write(template_instance.model_dump_json(indent=4))
 
     def generate_app_config_file_template_if_not_exists(self) -> None:
         target_file = os.path.join(self.target_file_dir, self.APP_CONFIG_FILE_NAME)
@@ -51,8 +61,6 @@ class ConfigFileTemplateGenerator:
         logger.success(
             f"[APP CONFIG GENERATED] App config file not exists, {target_file} generated"
         )
-
-    
 
     def generate_app_properties_file_template_if_not_exists(self) -> None:
         target_file = os.path.join(self.target_file_dir, self.APP_PROPERTIES_NAME)

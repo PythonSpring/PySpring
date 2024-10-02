@@ -20,13 +20,15 @@ from py_spring.core.entities.properties.properties import Properties
 from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
 
 
-
 T = TypeVar("T", bound=AppEntities)
 PT = TypeVar("PT", bound=Properties)
 
 
 class ComponentNotFoundError(Exception): ...
+
+
 class InvalidDependencyError(Exception): ...
+
 
 class ApplicationContextView(BaseModel):
     config: ApplicationContextConfig
@@ -97,16 +99,19 @@ class ApplicationContext:
             case ComponentScope.Prototype:
                 prototype_instance = component_cls()
                 return prototype_instance
-            
+
     def is_within_context(self, _cls: Type[AppEntities]) -> bool:
         cls_name = _cls.__name__
         is_within_component = cls_name in self.component_cls_container
         is_within_controller = cls_name in self.controller_cls_container
         is_within_bean_collection = cls_name in self.bean_collection_cls_container
         is_within_properties = cls_name in self.properties_cls_container
-        return is_within_component or is_within_controller or is_within_bean_collection or is_within_properties
-
-        
+        return (
+            is_within_component
+            or is_within_controller
+            or is_within_bean_collection
+            or is_within_properties
+        )
 
     def get_bean(self, object_cls: Type[T]) -> Optional[T]:
         bean_name = object_cls.__name__
@@ -303,7 +308,7 @@ class ApplicationContext:
                 error = f"[INVALID DEPENDENCY] Dependency {dependency.__name__} not found in the application context"
                 logger.error(error)
                 raise InvalidDependencyError(error)
-            
+
     def validate_entity_providers(self) -> None:
         for provider in self.providers:
             self._validate_entity_provider_dependencies(provider)

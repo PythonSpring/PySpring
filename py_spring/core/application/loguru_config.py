@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+
 class LogLevel(str, Enum):
     TRACE = "TRACE"
     DEBUG = "DEBUG"
@@ -11,6 +12,7 @@ class LogLevel(str, Enum):
     WARNING = "WARNING"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
+
 
 class LoguruConfig(BaseModel):
     log_format: str = (
@@ -25,5 +27,3 @@ class LoguruConfig(BaseModel):
     log_file_path: Optional[str] = "./logs/app.log"
     enable_backtrace: bool = True
     enable_diagnose: bool = True
-
-
