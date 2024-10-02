@@ -1,7 +1,7 @@
 import importlib.util
-from inspect import isclass
+import inspect
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Type, get_type_hints
+from typing import Any, Callable, Iterable, Type, get_type_hints
 
 from loguru import logger
 
@@ -61,7 +61,7 @@ def dynamically_import_modules(
             obj = getattr(module, attr)
             if attr.startswith("__"):
                 continue
-            if not isclass(obj):
+            if not inspect.isclass(obj):
                 continue
             loaded_classes.append(obj)
         all_loaded_classes.extend(loaded_classes)
@@ -88,6 +88,7 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
 
     func_name = func.__name__
     args_type_hints = get_type_hints(func)
+    arg_type = inspect.getargs(func.__code__)
 
     if RETURN_ID not in args_type_hints:
         raise TypeHintError(
@@ -96,8 +97,8 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
 
     # plue one is for return type, return type is not included in co_argcount if it is a simple function,
     # for member functions, self is included in co_varnames, but not in type hints, so plus 0
-    arguments = func.__code__.co_varnames
-    argument_count = len(arguments) + (0 if is_class_callable else 1)
+    arguments = arg_type.args
+    argument_count = len(arguments)
     if argument_count == 0:
         return
     if len(args_type_hints) == 0:
@@ -109,6 +110,9 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
         missing_type_hints_args = [
             arg for arg in arguments if arg not in args_type_hints and arg != "self"
         ]
+        if len(missing_type_hints_args) == 0:
+            return
+
         raise TypeHintError(
             f"Type hints not fully provided: {class_name}.{func_name}, arguments: {arguments}, current type hints: {args_type_hints}, missingg type hints: {','.join(missing_type_hints_args)}"
         )
