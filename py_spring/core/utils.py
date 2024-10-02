@@ -79,20 +79,36 @@ def dynamically_import_modules(
 
 class TypeHintsNotProvidedError(Exception): ...
 
-def checking_type_hints_for_callable(func: Callable[..., Any]) -> None:
+def check_type_hints_for_callable(func: Callable[..., Any], is_class_callable: bool = False) -> None:
     RETURN_ID = "return"
     
-    argument_count = func.__code__.co_argcount + 1 # plue one is for return type, return type is not included in co_argcount
-    annotations = func.__annotations__
-    args_type_hints = get_type_hints(func)
-    full_type_hints = {**annotations, **args_type_hints}
 
-    if RETURN_ID not in full_type_hints:
+    args_type_hints = get_type_hints(func)
+    if RETURN_ID not in args_type_hints:
         raise TypeHintsNotProvidedError("Type hints for 'return type' not provided for the function")
+    
+    # plue one is for return type, return type is not included in co_argcount if it is a simple function, 
+    # for member functions, self is included in co_varnames, but not in type hints, so plus 0
+    argument_count = len(func.__code__.co_varnames) + (0 if is_class_callable else 1)
+    
     if argument_count == 0:
         return 
-    if len(full_type_hints) == 0:
-        raise TypeHintsNotProvidedError(f"Type hints not provided for the function, number of arguments: {argument_count} and type hints: {full_type_hints}")
+    if len(args_type_hints) == 0:
+        breakpoint()
+        raise TypeHintsNotProvidedError(f"Type hints not provided for the function, number of arguments: {argument_count} and type hints: {args_type_hints}")
     
-    if len(full_type_hints) != argument_count:
-        raise TypeHintsNotProvidedError(f"Number of type hints does not match the number of arguments in the function: {full_type_hints}, number of arguments: {argument_count}")
+    if len(args_type_hints) != argument_count:
+        raise TypeHintsNotProvidedError(f"Number of type hints does not match the number of arguments in the function: {args_type_hints}, number of arguments: {argument_count}")
+    
+
+
+def check_type_hints_for_class(_cls: Type[Any]) -> None:
+    for attr in dir(_cls):
+        if attr.startswith("__"):
+            continue
+        attr_obj = getattr(_cls, attr)
+        if not callable(attr_obj):
+            continue
+        if not hasattr(attr_obj, "__annotations__"):
+            continue
+        check_type_hints_for_callable(attr_obj, is_class_callable=True)
