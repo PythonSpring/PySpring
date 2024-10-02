@@ -28,3 +28,5 @@ class ApplicationContextTypeChecker:
                         check_type_hints_for_class(_cls, skip_attrs=self.skip_class_attrs)
                     except TypeHintError as error:
                         logger.warning(f"Type hint error for class {_cls.__name__}: {error}")
+                    except NameError as error:
+                        ...
