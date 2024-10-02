@@ -89,10 +89,10 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
     func_name = func.__name__
     args_type_hints = get_type_hints(func)
     arg_type = inspect.getargs(func.__code__)
-
+    code_path = inspect.getsourcefile(func)
     if RETURN_ID not in args_type_hints:
         raise TypeHintError(
-            f"Type hints for 'return type' not provided for the function: {class_name}.{func_name}"
+            f"Type hints for 'return type' not provided for the function: {class_name}.{func_name}, path: {code_path}"
         )
 
     # plue one is for return type, return type is not included in co_argcount if it is a simple function,
@@ -103,7 +103,7 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
         return
     if len(args_type_hints) == 0:
         raise TypeHintError(
-            f"Type hints not provided for the function: {class_name}.{func_name}, arguments: {arguments}, current type hints: {args_type_hints}"
+            f"Type hints not provided for the function: {class_name}.{func_name}, arguments: {arguments}, current type hints: {args_type_hints}, path: {code_path}"
         )
 
     if len(args_type_hints) != argument_count:
@@ -112,9 +112,8 @@ def check_type_hints_for_callable(func: Callable[..., Any]) -> None:
         ]
         if len(missing_type_hints_args) == 0:
             return
-
         raise TypeHintError(
-            f"Type hints not fully provided: {class_name}.{func_name}, arguments: {arguments}, current type hints: {args_type_hints}, missingg type hints: {','.join(missing_type_hints_args)}"
+            f"Type hints not fully provided: {class_name}.{func_name}, arguments: {arguments}, current type hints: {args_type_hints}, missingg type hints: {','.join(missing_type_hints_args)}, path: {code_path}"
         )
 
 
