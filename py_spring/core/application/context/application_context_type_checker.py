@@ -1,15 +1,18 @@
-from typing import Mapping, Type
+from typing import Any, Iterable, Mapping, Type
+
+from loguru import logger
 from py_spring.core.application.commons import AppEntities
 from py_spring.core.application.context.application_context import ApplicationContext
-from py_spring.core.utils import check_type_hints_for_class
+from py_spring.core.utils import TypeHintError, check_type_hints_for_class
 
 
 class ApplicationContextTypeChecker:
     def __init__(
-        self, app_context: ApplicationContext, skip_class_attrs: list[str]
+        self, app_context: ApplicationContext, skip_class_attrs: list[str], target_classes: Iterable[Type[Any]]
     ) -> None:
         self.app_context = app_context
         self.skip_class_attrs = skip_class_attrs
+        self.target_classes = target_classes
 
     def check_type_hints_for_context(self, ctx: ApplicationContext) -> None:
         containers: list[Mapping[str, Type[AppEntities]]] = [
@@ -20,4 +23,8 @@ class ApplicationContextTypeChecker:
         ]
         for container in containers:
             for _cls in container.values():
-                check_type_hints_for_class(_cls, skip_attrs=self.skip_class_attrs)
+                if _cls not in self.target_classes:
+                    try:
+                        check_type_hints_for_class(_cls, skip_attrs=self.skip_class_attrs)
+                    except TypeHintError as error:
+                        logger.warning(f"Type hint error for class {_cls.__name__}: {error}")

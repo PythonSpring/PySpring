@@ -95,7 +95,7 @@ class PySpringApplication:
         }
         self.skip_class_attrs = ["Config", "model_config"]
         self.app_context_typer_checker = ApplicationContextTypeChecker(
-            self.app_context, self.skip_class_attrs
+            self.app_context, self.skip_class_attrs, self.classes_with_handlers.keys()
         )
 
     def __configure_logging(self):
