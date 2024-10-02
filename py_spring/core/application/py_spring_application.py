@@ -134,7 +134,6 @@ class PySpringApplication:
         for provider in entity_providers:
             self.app_context.register_entity_provider(provider)
             provider.set_context(self.app_context)
-            provider.provider_init()
 
     def _handle_register_component(self, _cls: Type[Component]) -> None:
         self.app_context.register_component(_cls)
@@ -161,13 +160,16 @@ class PySpringApplication:
         logger.debug(f"[PROPERTIES INIT] Register properties: {_cls.__name__}")
         self.app_context.register_properties(_cls)
 
+    def _init_providers(self, providers: Iterable[EntityProvider]) -> None:
+        for provider in providers:
+            provider.provider_init()
+
     def __init_app(self) -> None:
         self._scan_classes_for_project()
         self._register_all_entities_from_providers()
         self._register_app_entities(self.scanned_classes)
         self._register_entity_providers(self.entity_providers)
         self._check_type_hints()
-
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
@@ -175,6 +177,7 @@ class PySpringApplication:
         self.app_context.validate_entity_providers()
         # after injecting all deps, lifecycle (init) can be called
 
+        self._init_providers(self.entity_providers)
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
 
     def _check_type_hints(self) -> None:

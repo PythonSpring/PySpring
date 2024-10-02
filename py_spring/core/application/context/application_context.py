@@ -159,7 +159,18 @@ class ApplicationContext:
 
     def register_entity_provider(self, provider: EntityProvider) -> None:
         self.providers.append(provider)
+        for entity_cls in provider.get_entities():
+            if issubclass(entity_cls, Component):
+                self.register_component(entity_cls)
+            elif issubclass(entity_cls, RestController):
+                self.register_controller(entity_cls)
+            elif issubclass(entity_cls, BeanCollection):
+                self.register_bean_collection(entity_cls)
+            elif issubclass(entity_cls, Properties):
+                self.register_properties(entity_cls)
 
+            
+    
     def register_properties(self, properties_cls: Type[Properties]) -> None:
         if not issubclass(properties_cls, Properties):
             raise TypeError(
