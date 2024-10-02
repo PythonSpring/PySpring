@@ -1,7 +1,7 @@
 import importlib.util
 from inspect import isclass
 from pathlib import Path
-from typing import Iterable, Type
+from typing import Any, Callable, Iterable, Optional, Type, get_type_hints
 
 from loguru import logger
 
@@ -75,3 +75,24 @@ def dynamically_import_modules(
                 returned_target_classes.add(loaded_class)
 
     return returned_target_classes
+
+
+class TypeHintsNotProvidedError(Exception): ...
+
+def checking_type_hints_for_callable(func: Callable[..., Any]) -> None:
+    RETURN_ID = "return"
+    
+    argument_count = func.__code__.co_argcount + 1 # plue one is for return type, return type is not included in co_argcount
+    annotations = func.__annotations__
+    args_type_hints = get_type_hints(func)
+    full_type_hints = {**annotations, **args_type_hints}
+
+    if RETURN_ID not in full_type_hints:
+        raise TypeHintsNotProvidedError("Type hints for 'return type' not provided for the function")
+    if argument_count == 0:
+        return 
+    if len(full_type_hints) == 0:
+        raise TypeHintsNotProvidedError(f"Type hints not provided for the function, number of arguments: {argument_count} and type hints: {full_type_hints}")
+    
+    if len(full_type_hints) != argument_count:
+        raise TypeHintsNotProvidedError(f"Number of type hints does not match the number of arguments in the function: {full_type_hints}, number of arguments: {argument_count}")
