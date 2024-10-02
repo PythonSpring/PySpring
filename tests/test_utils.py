@@ -1,4 +1,3 @@
-from typing import get_type_hints
 import pytest
 from py_spring.core.utils import (
     check_type_hints_for_callable,
@@ -108,26 +107,6 @@ class TestCheckTypeHintsForClass:
             check_type_hints_for_class(TestClassWithNotArsAndReturnTyped)
 
     def test_class_with_method_having_variable_inside(self):
-        # with pytest.raises(
-        #     TypeHintError
-        # ):
-        RETURN_ID = "return"
-        func = TestClassWithVariableInside.method
-        func_qualname_list = func.__qualname__.split(".")
-        is_class_callable = True if len(func_qualname_list) == 2 else False
-        class_name = func_qualname_list[0] if is_class_callable else ""
-
-        func_name = func.__name__
-        args_type_hints = get_type_hints(func)
-
-        if RETURN_ID not in args_type_hints:
-            raise TypeHintError(
-                f"Type hints for 'return type' not provided for the function: {class_name}.{func_name}"
-            )
-
-        # plue one is for return type, return type is not included in co_argcount if it is a simple function,
-        # for member functions, self is included in co_varnames, but not in type hints, so plus 0
-        arguments = [_arg for _arg in func.__annotations__ if _arg != RETURN_ID]
-
-        argument_count = len(arguments) + (0 if is_class_callable else 1)
         check_type_hints_for_class(TestClassWithVariableInside)
+
+    
