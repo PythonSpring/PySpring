@@ -7,6 +7,9 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from py_spring.core.application.commons import AppEntities
+from py_spring.core.application.context.application_context_type_checker import (
+    ApplicationContextTypeChecker,
+)
 from py_spring.core.entities.entity_provider import EntityProvider
 from py_spring.commons.class_scanner import ClassScanner
 from py_spring.commons.config_file_template_generator.config_file_template_generator import (
@@ -24,8 +27,6 @@ from py_spring.core.entities.bean_collection import BeanCollection
 from py_spring.core.entities.component import Component, ComponentLifeCycle
 from py_spring.core.entities.controllers.rest_controller import RestController
 from py_spring.core.entities.properties.properties import Properties
-
-
 
 
 class ApplicationFileGroups(BaseModel):
@@ -55,7 +56,9 @@ class PySpringApplication:
 
     PY_FILE_EXTENSION = ".py"
 
-    def __init__(self, app_config_path: str, entity_providers: Iterable[EntityProvider] = list()) -> None:
+    def __init__(
+        self, app_config_path: str, entity_providers: Iterable[EntityProvider] = list()
+    ) -> None:
         self.entity_providers = entity_providers
         logger.debug(
             f"[APP INIT] Initialize the app from config path: {app_config_path}"
@@ -69,9 +72,7 @@ class PySpringApplication:
         self.app_config_repo = ApplicationConfigRepository(app_config_path)
         self.app_config = self.app_config_repo.get_config()
         self.file_path_scanner = FilePathScanner(
-            target_dirs=[
-                self.app_config.app_src_target_dir
-            ],
+            target_dirs=[self.app_config.app_src_target_dir],
             target_extensions=[self.PY_FILE_EXTENSION],
         )
         self.target_dir_absolute_file_paths = (
@@ -92,19 +93,23 @@ class PySpringApplication:
             BeanCollection: self._handle_register_bean_collection,
             Properties: self._handle_register_properties,
         }
+        self.skip_class_attrs = ["Config", "model_config"]
+        self.app_context_typer_checker = ApplicationContextTypeChecker(
+            self.app_context, self.skip_class_attrs
+        )
 
     def __configure_logging(self):
         """Applies the logging configuration using Loguru."""
         config = self.app_config.loguru_config
         if not config.log_file_path:
             return
-        
+
         logger.add(
             config.log_file_path,
             format=config.log_format,
             level=config.log_level,
             rotation=config.log_rotation,
-            retention=config.log_retention
+            retention=config.log_retention,
         )
 
     def _scan_classes_for_project(self) -> None:
@@ -123,7 +128,9 @@ class PySpringApplication:
                     continue
                 handler(_cls)
 
-    def _register_entity_providers(self, entity_providers: Iterable[EntityProvider]) -> None:
+    def _register_entity_providers(
+        self, entity_providers: Iterable[EntityProvider]
+    ) -> None:
         for provider in entity_providers:
             self.app_context.register_entity_provider(provider)
             provider.set_context(self.app_context)
@@ -158,16 +165,20 @@ class PySpringApplication:
         self._scan_classes_for_project()
         self._register_all_entities_from_providers()
         self._register_app_entities(self.scanned_classes)
+        self._register_entity_providers(self.entity_providers)
+        self._check_type_hints()
+
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
         self.app_context.set_all_file_paths(self.target_dir_absolute_file_paths)
-        self._register_entity_providers(self.entity_providers)
         self.app_context.validate_entity_providers()
         # after injecting all deps, lifecycle (init) can be called
+
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
-    
-    
+
+    def _check_type_hints(self) -> None:
+        self.app_context_typer_checker.check_type_hints_for_context(self.app_context)
 
     def _handle_singleton_components_life_cycle(
         self, life_cycle: ComponentLifeCycle
