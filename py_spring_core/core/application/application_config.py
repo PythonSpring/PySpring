@@ -1,9 +1,9 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from py_spring.commons.json_config_repository import (
+from py_spring_core.commons.json_config_repository import (
     JsonConfigRepository,
 )
-from py_spring.core.application.loguru_config import LoguruConfig
+from py_spring_core.core.application.loguru_config import LoguruConfig
 
 
 class ServerConfig(BaseModel):

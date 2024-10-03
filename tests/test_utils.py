@@ -1,5 +1,5 @@
 import pytest
-from py_spring.core.utils import (
+from py_spring_core.core.utils import (
     check_type_hints_for_callable,
     TypeHintError,
     check_type_hints_for_class,

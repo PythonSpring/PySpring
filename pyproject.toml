@@ -1,6 +1,6 @@
 [project]
-name = "py_spring"
-version = "0.0.2"
+name = "py_spring_core"
+dynamic = ["version"]
 description = "Default template for PDM package"
 authors = [
     {name = "William Chen", email = "OW6201231@gmail.com"},
@@ -53,12 +53,13 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
-version = { source = "file", path = "py_spring/__init__.py" }
+version = { source = "file", path = "py_spring_core/__init__.py" }
 distribution = true
 
 [tool.pdm.build]
@@ -68,6 +69,7 @@ source-includes = [
     "requirements*.txt",
     "scripts/",
 ]
+
 [tool.pdm.dev-dependencies]
 dev = [
     "ruff>=0.6.3",

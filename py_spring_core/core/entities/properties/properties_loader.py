@@ -4,7 +4,7 @@ from typing import Optional, Type
 import cachetools
 import yaml
 
-from py_spring.core.entities.properties.properties import Properties
+from py_spring_core.core.entities.properties.properties import Properties
 
 
 class InvalidPropertiesKeyError(Exception): ...

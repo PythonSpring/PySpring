@@ -4,20 +4,20 @@ from typing import Callable, Mapping, Optional, Type, TypeVar, cast
 from loguru import logger
 from pydantic import BaseModel
 
-from py_spring.core.application.commons import AppEntities
-from py_spring.core.application.context.application_context_config import (
+from py_spring_core.core.application.commons import AppEntities
+from py_spring_core.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
-from py_spring.core.entities.bean_collection import (
+from py_spring_core.core.entities.bean_collection import (
     BeanCollection,
     BeanConflictError,
     InvalidBeanError,
 )
-from py_spring.core.entities.component import Component, ComponentScope
-from py_spring.core.entities.controllers.rest_controller import RestController
-from py_spring.core.entities.entity_provider import EntityProvider
-from py_spring.core.entities.properties.properties import Properties
-from py_spring.core.entities.properties.properties_loader import _PropertiesLoader
+from py_spring_core.core.entities.component import Component, ComponentScope
+from py_spring_core.core.entities.controllers.rest_controller import RestController
+from py_spring_core.core.entities.entity_provider import EntityProvider
+from py_spring_core.core.entities.properties.properties import Properties
+from py_spring_core.core.entities.properties.properties_loader import _PropertiesLoader
 
 
 T = TypeVar("T", bound=AppEntities)

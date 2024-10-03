@@ -6,27 +6,27 @@ from fastapi import APIRouter, FastAPI
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
-from py_spring.core.application.commons import AppEntities
-from py_spring.core.application.context.application_context_type_checker import (
+from py_spring_core.core.application.commons import AppEntities
+from py_spring_core.core.application.context.application_context_type_checker import (
     ApplicationContextTypeChecker,
 )
-from py_spring.core.entities.entity_provider import EntityProvider
-from py_spring.commons.class_scanner import ClassScanner
-from py_spring.commons.config_file_template_generator.config_file_template_generator import (
+from py_spring_core.core.entities.entity_provider import EntityProvider
+from py_spring_core.commons.class_scanner import ClassScanner
+from py_spring_core.commons.config_file_template_generator.config_file_template_generator import (
     ConfigFileTemplateGenerator,
 )
-from py_spring.commons.file_path_scanner import FilePathScanner
-from py_spring.core.application.application_config import ApplicationConfigRepository
-from py_spring.core.application.context.application_context import (
+from py_spring_core.commons.file_path_scanner import FilePathScanner
+from py_spring_core.core.application.application_config import ApplicationConfigRepository
+from py_spring_core.core.application.context.application_context import (
     ApplicationContext,
 )
-from py_spring.core.application.context.application_context_config import (
+from py_spring_core.core.application.context.application_context_config import (
     ApplicationContextConfig,
 )
-from py_spring.core.entities.bean_collection import BeanCollection
-from py_spring.core.entities.component import Component, ComponentLifeCycle
-from py_spring.core.entities.controllers.rest_controller import RestController
-from py_spring.core.entities.properties.properties import Properties
+from py_spring_core.core.entities.bean_collection import BeanCollection
+from py_spring_core.core.entities.component import Component, ComponentLifeCycle
+from py_spring_core.core.entities.controllers.rest_controller import RestController
+from py_spring_core.core.entities.properties.properties import Properties
 
 
 class ApplicationFileGroups(BaseModel):

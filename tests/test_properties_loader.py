@@ -1,8 +1,8 @@
 import pytest
 from pytest_mock import MockerFixture
 
-from py_spring.core.entities.properties.properties import Properties
-from py_spring.core.entities.properties.properties_loader import (
+from py_spring_core.core.entities.properties.properties import Properties
+from py_spring_core.core.entities.properties.properties_loader import (
     InvalidPropertiesKeyError,
     _PropertiesLoader,
 )

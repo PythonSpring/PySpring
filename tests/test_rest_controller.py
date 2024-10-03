@@ -1,7 +1,7 @@
 import pytest
 from fastapi import APIRouter, FastAPI
 
-from py_spring.core.entities.controllers.rest_controller import RestController
+from py_spring_core.core.entities.controllers.rest_controller import RestController
 
 
 class TestRestController:

@@ -1,9 +1,9 @@
 from typing import Any, Iterable, Mapping, Type
 
 from loguru import logger
-from py_spring.core.application.commons import AppEntities
-from py_spring.core.application.context.application_context import ApplicationContext
-from py_spring.core.utils import TypeHintError, check_type_hints_for_class
+from py_spring_core.core.application.commons import AppEntities
+from py_spring_core.core.application.context.application_context import ApplicationContext
+from py_spring_core.core.utils import TypeHintError, check_type_hints_for_class
 
 
 class ApplicationContextTypeChecker:
