@@ -56,10 +56,10 @@ class ClassScanner:
     ) -> Optional[Type[object]]:
         spec = importlib.util.spec_from_file_location(class_name, file_path)
         if spec is None:
-            return
+            return None
         module = importlib.util.module_from_spec(spec)
         if spec.loader is None:
-            return
+            return None
         spec.loader.exec_module(module)
         cls = getattr(module, class_name, None)
         return cls

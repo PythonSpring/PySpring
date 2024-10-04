@@ -82,11 +82,11 @@ class ApplicationContext:
 
     def get_component(self, component_cls: Type[T]) -> Optional[T]:
         if not issubclass(component_cls, Component):
-            return
+            return None
 
         component_cls_name = component_cls.get_name()
         if component_cls_name not in self.component_cls_container:
-            return
+            return None
 
         scope = component_cls.get_scope()
         match scope:
@@ -94,11 +94,11 @@ class ApplicationContext:
                 optional_instance = self.singleton_component_instance_container.get(
                     component_cls_name
                 )
-                return optional_instance  # type: ignore
+                return cast(T, optional_instance) 
 
             case ComponentScope.Prototype:
                 prototype_instance = component_cls()
-                return prototype_instance
+                return cast(T, prototype_instance)
 
     def is_within_context(self, _cls: Type[AppEntities]) -> bool:
         cls_name = _cls.__name__
@@ -116,15 +116,15 @@ class ApplicationContext:
     def get_bean(self, object_cls: Type[T]) -> Optional[T]:
         bean_name = object_cls.__name__
         if bean_name not in self.singleton_bean_instance_container:
-            return
+            return None
 
         optional_instance = self.singleton_bean_instance_container.get(bean_name)
-        return optional_instance  # type: ignore
+        return cast(T, optional_instance)
 
     def get_properties(self, properties_cls: Type[PT]) -> Optional[PT]:
         properties_cls_name = properties_cls.get_key()
         if properties_cls_name not in self.properties_cls_container:
-            return
+            return None
         optional_instance = cast(
             PT, self.singleton_properties_instance_container.get(properties_cls_name)
         )
