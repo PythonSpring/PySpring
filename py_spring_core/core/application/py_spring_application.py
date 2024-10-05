@@ -6,17 +6,15 @@ from fastapi import APIRouter, FastAPI
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
+from py_spring_core.commons.type_checking_service import TypeCheckingService
 from py_spring_core.core.application.commons import AppEntities
-from py_spring_core.core.application.context.application_context_type_checker import (
-    ApplicationContextTypeChecker,
-)
 from py_spring_core.core.entities.entity_provider import EntityProvider
 from py_spring_core.commons.class_scanner import ClassScanner
 from py_spring_core.commons.config_file_template_generator.config_file_template_generator import (
     ConfigFileTemplateGenerator,
 )
 from py_spring_core.commons.file_path_scanner import FilePathScanner
-from py_spring_core.core.application.application_config import ApplicationConfigRepository
+from py_spring_core.core.application.application_config import ApplicationConfigRepository, TypeCheckingMode
 from py_spring_core.core.application.context.application_context import (
     ApplicationContext,
 )
@@ -93,11 +91,7 @@ class PySpringApplication:
             BeanCollection: self._handle_register_bean_collection,
             Properties: self._handle_register_properties,
         }
-        self.skip_class_attrs = ["Config", "model_config"]
-        self.app_context_typer_checker = ApplicationContextTypeChecker(
-            self.app_context, self.skip_class_attrs, self.classes_with_handlers.keys(),
-            [Properties, BaseModel]
-        )
+        self.type_checking_service = TypeCheckingService(self.app_config.app_src_target_dir)
 
     def __configure_logging(self):
         """Applies the logging configuration using Loguru."""
@@ -170,7 +164,7 @@ class PySpringApplication:
         self._register_all_entities_from_providers()
         self._register_app_entities(self.scanned_classes)
         self._register_entity_providers(self.entity_providers)
-        self._check_type_hints()
+        self._type_checking()
         self.app_context.load_properties()
         self.app_context.init_ioc_container()
         self.app_context.inject_dependencies_for_app_entities()
@@ -181,8 +175,14 @@ class PySpringApplication:
         self._init_providers(self.entity_providers)
         self._handle_singleton_components_life_cycle(ComponentLifeCycle.Init)
 
-    def _check_type_hints(self) -> None:
-        self.app_context_typer_checker.check_type_hints_for_context(self.app_context)
+    def _type_checking(self) -> None:
+        optional_error = self.type_checking_service.type_checking()
+        if optional_error is not None:
+            match (self.app_config.type_checking_mode):
+                case TypeCheckingMode.Strict:
+                    raise optional_error
+                case TypeCheckingMode.Basic:
+                    logger.warning(optional_error)
 
     def _handle_singleton_components_life_cycle(
         self, life_cycle: ComponentLifeCycle
