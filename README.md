@@ -5,8 +5,6 @@
 # Key Features
 - Application Initialization: **PySpringApplication** class serves as the main entry point for the **PySpring** application. It initializes the application from a configuration file, scans the application source directory for Python files, and groups them into class files and model files
 
-- **Model Import and Table Creation**: **PySpring** dynamically imports model modules and creates SQLModel tables based on the imported models. It supports SQLAlchemy for database operations.
-
 - **Application Context Management**: **PySpring** manages the application context and dependency injection. It registers application entities such as components, controllers, bean collections, and properties. It also initializes the application context and injects dependencies.
 
 - **REST Controllers**: **PySpring** supports RESTful API development using the RestController class. It allows you to define routes, handle HTTP requests, and register middlewares easily.
